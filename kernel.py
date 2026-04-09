@@ -38,16 +38,75 @@ class Kernel:
         self.last_action_result = None
         self.next_focus = None
 
+    SESSION_PATH = Path("brain/session_state.json")
+
     def boot(self):
-        """Initialise le kernel : charge génome, prépare workspace."""
+        """Initialise le kernel : charge génome, restaure session si existante."""
         Path("/tmp/genesis_workspace").mkdir(parents=True, exist_ok=True)
 
         self.genome = genome_module.load()
+
+        # Restaurer la session précédente si elle existe
+        restored = self._restore_session()
+
         audit.log_event("kernel_boot", {
             "genome_generation": self.genome["generation"],
             "initial_objective": self.initial_objective,
+            "session_restored": restored,
         })
-        print(f"\nGenesis booting... Generation {self.genome['generation']}")
+
+        if restored:
+            print(f"\nGenesis resuming... Generation {self.genome['generation']} | Cycle {self.cycle_id} | Objective: {self.objective['goal'][:60]}...")
+        else:
+            print(f"\nGenesis booting fresh... Generation {self.genome['generation']}")
+
+    def _save_session(self):
+        """Persiste l'état cognitif courant après chaque cycle."""
+        state = {
+            "saved_at": datetime.now(timezone.utc).isoformat(),
+            "cycle_id": self.cycle_id,
+            "genome_generation": self.genome["generation"],
+            "objective": self.objective,
+            "sub_goals": self.sub_goals,
+            "current_sub_goal": self.current_sub_goal,
+            "completed_sub_goals": self.completed_sub_goals,
+            "stagnant_cycles": self.stagnant_cycles,
+            "next_focus": self.next_focus,
+            "last_action_result_excerpt": (self.last_action_result or "")[:300],
+        }
+        self.SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
+        self.SESSION_PATH.write_text(json.dumps(state, indent=2, ensure_ascii=False))
+
+    def _restore_session(self) -> bool:
+        """
+        Restaure la session précédente si elle existe et est active.
+        Retourne True si restauration réussie.
+        """
+        if self.initial_objective:
+            # Objectif fourni explicitement → ignorer la session sauvegardée
+            return False
+
+        if not self.SESSION_PATH.exists():
+            return False
+
+        try:
+            state = json.loads(self.SESSION_PATH.read_text())
+        except Exception:
+            return False
+
+        obj = state.get("objective")
+        if not obj or obj.get("status") == "completed":
+            return False
+
+        self.cycle_id = state.get("cycle_id", 0)
+        self.objective = obj
+        self.sub_goals = state.get("sub_goals", [])
+        self.current_sub_goal = state.get("current_sub_goal")
+        self.completed_sub_goals = state.get("completed_sub_goals", [])
+        self.stagnant_cycles = state.get("stagnant_cycles", 0)
+        self.next_focus = state.get("next_focus")
+        self.last_action_result = state.get("last_action_result_excerpt")
+        return True
 
     def run(self):
         """Boucle cognitive principale."""
@@ -252,12 +311,13 @@ class Kernel:
         if fitness["status"] == "PROGRESS" and self.current_sub_goal:
             self._maybe_advance_sub_goal(fitness)
 
-        # 7. Log + display
+        # 7. Log + display + persist
         memory_module.record(cycle_entry)
         audit.log_cycle(cycle_entry)
         audit.print_cycle(cycle_entry)
 
         self.cycle_history.append(cycle_entry)
+        self._save_session()
 
     def _maybe_advance_sub_goal(self, fitness: dict):
         """Avance vers le prochain sous-but si le courant semble complété."""
@@ -317,6 +377,7 @@ class Kernel:
         audit.log_cycle(cycle_entry)
         audit.print_cycle(cycle_entry)
         self.cycle_history.append(cycle_entry)
+        self._save_session()
 
         time.sleep(3)  # Pause avant retry
 
