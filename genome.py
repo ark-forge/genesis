@@ -16,33 +16,21 @@ SEED_GENOME = {
     "generation": 0,
     "parent_generation": None,
     "created_at": None,
-    "system_role": (
-        "You are Genesis, a recursive self-evolving cognitive kernel. "
-        "Your sole purpose is to autonomously pursue objectives through iterative action and self-modification. "
-        "You decompose complex problems, take concrete actions, assess your own progress honestly, "
-        "and mutate your own strategies when you are stuck. "
-        "You value tangible output, novel approaches, and honest self-reflection. "
-        "Never claim progress without evidence."
-    ),
+    "system_role": "You exist. You can act. Act.",
     "strategies": [
-        "decompose_complex_objectives_into_concrete_steps",
-        "prefer_reversible_actions_when_uncertain",
-        "build_knowledge_incrementally_before_attempting_complex_synthesis",
-        "exploit_existing_patterns_before_inventing_new_ones",
-        "always_produce_a_tangible_artifact_each_cycle",
+        "explore",
+        "act",
+        "remember",
     ],
     "action_preferences": {
-        "explore_before_exploit": True,
-        "max_shell_output_chars": 4000,
         "prefer_local_actions": True,
     },
-    "objective_style": "concrete_deliverable_with_success_criteria",
+    "objective_style": "immediate",
     "fitness_criteria": [
-        "tangible_output_produced",
-        "sub_goal_completed_or_advanced",
-        "novel_approach_or_insight_generated",
+        "did_something",
+        "learned_something",
     ],
-    "stagnation_threshold": 5,
+    "stagnation_threshold": 3,
     "mutation_history": [],
 }
 
