@@ -77,14 +77,8 @@ class Kernel:
                 print("\n\nInterrupted by user.")
                 break
             except Exception as e:
-                audit.log_event("kernel_error", {
-                    "cycle_id": self.cycle_id,
-                    "error": str(e),
-                    "traceback": traceback.format_exc(),
-                })
-                print(f"\n[ERROR] Cycle {self.cycle_id}: {e}")
-                print("Continuing in 5s...")
-                time.sleep(5)
+                # Les erreurs sont des cycles BLOCKED — jamais un crash
+                self._handle_error_as_blocked_cycle(e)
 
     def _acquire_objective(self):
         """Génère ou adopte l'objectif initial."""
@@ -155,6 +149,13 @@ class Kernel:
             next_focus=self.next_focus,
         )
 
+        # 3a'. Si l'action elle-même est un dict d'erreur LLM → cycle BLOCKED
+        if action.get("_llm_error"):
+            return self._blocked_cycle(
+                sg_description,
+                f"LLM failed to propose action: {action.get('_error_msg', '?')}",
+            )
+
         # 3b. Gérer self_modify comme signal (pas d'exécution directe)
         if action.get("type") == "self_modify":
             result = actions_module.execute(action, self.genome)
@@ -184,6 +185,15 @@ class Kernel:
                 cycle_history=self.cycle_history,
                 genome=self.genome,
             )
+            # Si fitness est un dict d'erreur LLM → BLOCKED
+            if fitness.get("_llm_error"):
+                fitness = {
+                    "status": "BLOCKED",
+                    "score": 0,
+                    "reason": f"LLM failed to assess fitness: {fitness.get('_error_msg', '?')}",
+                    "evidence": result[:200],
+                    "next_focus": "retry with simpler approach",
+                }
 
         self.last_action_result = result
         self.next_focus = fitness.get("next_focus")
@@ -254,7 +264,6 @@ class Kernel:
         score = fitness.get("score", 0)
         if score >= 7:  # Score élevé = sous-but probablement terminé
             self.completed_sub_goals.append(self.current_sub_goal)
-            # Trouver le prochain sous-but non complété
             remaining = [
                 sg for sg in self.sub_goals
                 if sg["id"] not in self.completed_sub_goals
@@ -263,5 +272,87 @@ class Kernel:
                 self.current_sub_goal = remaining[0]["id"]
                 print(f"\n  → Advanced to: {remaining[0].get('description', remaining[0]['id'])}")
             else:
-                # Tous les sous-buts complétés → re-décomposer ou finir
                 self.current_sub_goal = None
+
+    def _blocked_cycle(self, sub_goal: str, reason: str):
+        """
+        Enregistre un cycle BLOCKED sans action réelle.
+        Utilisé quand le LLM échoue à produire une réponse valide.
+        """
+        self.cycle_id += 1
+        self.stagnant_cycles += 1
+
+        cycle_entry = {
+            "cycle_id": self.cycle_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "genome_generation": self.genome["generation"],
+            "objective": self.objective["goal"] if self.objective else "?",
+            "sub_goal": sub_goal,
+            "action_type": "none",
+            "action_params": {},
+            "action_rationale": "LLM error",
+            "action_result_excerpt": "",
+            "fitness_status": "BLOCKED",
+            "fitness_score": 0,
+            "fitness_reason": reason,
+            "fitness_evidence": "",
+            "stagnant_cycles": self.stagnant_cycles,
+            "genome_mutated": False,
+        }
+
+        # Déclencher évolution si trop de cycles bloqués
+        if self.stagnant_cycles >= self.genome.get("stagnation_threshold", 5):
+            print(f"\n[EVOLUTION] Blocked for {self.stagnant_cycles} cycles — mutating genome...")
+            stagnant_history = self.cycle_history[-self.stagnant_cycles:]
+            self.genome = evolver_module.mutate(self.genome, stagnant_history, self.objective or {})
+            self.stagnant_cycles = 0
+            cycle_entry["genome_mutated"] = True
+            audit.log_event("genome_mutation", {
+                "new_generation": self.genome["generation"],
+                "cycle_id": self.cycle_id,
+                "trigger": "llm_error_loop",
+            })
+
+        memory_module.record(cycle_entry)
+        audit.log_cycle(cycle_entry)
+        audit.print_cycle(cycle_entry)
+        self.cycle_history.append(cycle_entry)
+
+        time.sleep(3)  # Pause avant retry
+
+    def _handle_error_as_blocked_cycle(self, error: Exception):
+        """
+        Transforme une exception non gérée en cycle BLOCKED.
+        Le kernel ne crash jamais — les erreurs font partie de l'évolution.
+        """
+        self.stagnant_cycles += 1
+
+        audit.log_event("kernel_error", {
+            "cycle_id": self.cycle_id,
+            "stagnant_cycles": self.stagnant_cycles,
+            "error": str(error),
+            "traceback": traceback.format_exc(),
+        })
+
+        print(f"\n[BLOCKED] Cycle {self.cycle_id} error: {str(error)[:120]}")
+        print(f"  Stagnant: {self.stagnant_cycles}/{self.genome.get('stagnation_threshold', 5)}")
+
+        # Déclencher évolution si trop d'erreurs consécutives
+        if (
+            self.stagnant_cycles >= self.genome.get("stagnation_threshold", 5)
+            and self.objective
+        ):
+            print(f"\n[EVOLUTION] Persistent errors — mutating genome...")
+            try:
+                stagnant_history = self.cycle_history[-self.stagnant_cycles:]
+                self.genome = evolver_module.mutate(self.genome, stagnant_history, self.objective)
+                self.stagnant_cycles = 0
+                audit.log_event("genome_mutation", {
+                    "new_generation": self.genome["generation"],
+                    "cycle_id": self.cycle_id,
+                    "trigger": "exception_loop",
+                })
+            except Exception as evolve_err:
+                print(f"  [EVOLUTION FAILED] {evolve_err} — continuing anyway")
+
+        time.sleep(min(5 * self.stagnant_cycles, 30))  # backoff progressif
