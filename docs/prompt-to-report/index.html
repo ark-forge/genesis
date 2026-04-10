@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Model Advisor — AI Model Report for Your Use Case</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPDF/2.5.1/jspdf.umd.min.js"></script>
   <meta name="description" content="Describe your AI use case and get a custom PDF report ranking the top 5 open-weight models with reasoning, benchmarks, and integration tips." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -568,6 +569,13 @@
   </section>
 </main>
 
+  <!-- ── POST-PAYMENT REPORT SECTION (shown when ?paid=1) ── -->
+  <div id="report-section" style="display:none;max-width:680px;width:100%;margin:48px auto 0;padding:0 24px;">
+    <div id="report-status" style="padding:14px 18px;border-radius:10px;background:#12121a;border:1px solid #2a2a3a;font-size:.9rem;margin-bottom:16px;"></div>
+    <div id="models-list"></div>
+    <button id="download-pdf-btn" onclick="downloadPDF()" style="display:none;width:100%;margin-top:16px;padding:14px;background:linear-gradient(135deg,#059669,#34d399);color:#fff;font-size:1rem;font-weight:700;border:none;border-radius:10px;cursor:pointer;">Download PDF Report</button>
+  </div>
+
 <footer>
   <p>Model Advisor is a product of <a href="https://arkforge.tech" target="_blank">ArkForge</a> · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
   <p style="margin-top:6px">Payments processed securely by <a href="https://stripe.com" target="_blank">Stripe</a>. We never store card details.</p>
@@ -575,10 +583,93 @@
 
 <script>
   const STRIPE_PRICE_ID = 'price_1TKi4V6iihEhp9U99KPRZplu';
-  // Stripe Checkout is initiated server-side; for a static Pages deployment
-  // we redirect to a pre-built Stripe Payment Link URL.
-  // Replace the URL below with your actual Stripe Payment Link for this price.
   const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/3cI9AMgRO3UE6yQdaE4AU0f';
+  const GEMINI_KEY = 'AIzaSyAUcZ7GPlC_UHm7Xal5mLw7H8Pf8FH7R5A';
+  let reportData = null;
+
+  async function callGemini(prompt) {
+    const models = ['gemini-2.0-flash', 'gemini-2.5-flash'];
+    for (const model of models) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
+          );
+          if (res.status === 429 || res.status === 503) {
+            await new Promise(r => setTimeout(r, (attempt + 1) * 8000));
+            continue;
+          }
+          const data = await res.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (text) return text;
+        } catch (e) { /* retry */ }
+      }
+    }
+    throw new Error('Gemini API unavailable after retries');
+  }
+
+  async function generateReport(usecase) {
+    const statusEl = document.getElementById('report-status');
+    statusEl.style.cssText = 'background:#1a1a2e;border:1px solid #2a2a3a;color:#a78bfa;';
+    statusEl.textContent = 'Calling Gemini AI to analyze your use-case…';
+
+    const prompt = `You are an expert AI infrastructure advisor. A user needs help choosing open-weight LLM models.\n\nUSE-CASE: ${usecase}\n\nRank the TOP 5 open-weight models (models with public weights — not OpenAI/Anthropic/Google closed APIs) for this use-case. For each model provide:\n1. Model name and version\n2. Parameter count\n3. Key benchmark scores relevant to this use-case (e.g. HumanEval, MMLU, MT-Bench)\n4. Why it fits this specific use-case (2-3 sentences)\n5. One practical integration tip\n\nRespond ONLY as a JSON array with these fields: rank, name, params, benchmarks, reasoning, integration_tip`;
+
+    try {
+      const text = await callGemini(prompt);
+      const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (!jsonMatch) throw new Error('No JSON array in Gemini response');
+      reportData = JSON.parse(jsonMatch[0]);
+      renderReport(reportData, usecase);
+    } catch (e) {
+      statusEl.style.cssText = 'background:#450a0a;border:1px solid #b91c1c;color:#fca5a5;';
+      statusEl.textContent = 'Error generating report: ' + e.message + '. Please email support@arkforge.tech with your use-case for a manual report.';
+    }
+  }
+
+  function renderReport(models, usecase) {
+    const statusEl = document.getElementById('report-status');
+    statusEl.style.cssText = 'background:#14532d;border:1px solid #16a34a;color:#86efac;';
+    statusEl.textContent = '✓ Report generated! Your top 5 models are ranked below.';
+
+    const list = document.getElementById('models-list');
+    list.innerHTML = models.map((m, i) => `
+      <div style="background:#12121a;border:1px solid #2a2a3a;border-radius:10px;padding:18px;margin-bottom:12px;">
+        <div style="font-weight:700;color:#a78bfa;font-size:1rem;margin-bottom:4px;">#${m.rank || i+1} ${m.name}</div>
+        <div style="font-size:.8rem;color:#64748b;margin-bottom:8px;">${m.params} · ${m.benchmarks}</div>
+        <div style="font-size:.88rem;color:#cbd5e1;line-height:1.55;">${m.reasoning}</div>
+        <div style="margin-top:8px;font-size:.82rem;color:#94a3b8;"><strong style="color:#a78bfa;">Integration tip:</strong> ${m.integration_tip}</div>
+      </div>`).join('');
+
+    document.getElementById('download-pdf-btn').style.display = 'block';
+  }
+
+  function downloadPDF() {
+    if (!reportData) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(20); doc.setTextColor(108, 99, 255);
+    doc.text('Custom AI Model Report', 20, 22);
+    doc.setFontSize(10); doc.setTextColor(136, 136, 168);
+    doc.text('Generated by ArkForge ModelAdvisor · arkforge.tech', 20, 30);
+    doc.setFontSize(9); doc.setTextColor(100, 100, 130);
+    const ucLines = doc.splitTextToSize('Use-case: ' + (sessionStorage.getItem('modeladvisor_usecase') || ''), 170);
+    doc.text(ucLines, 20, 38);
+    let y = 38 + ucLines.length * 5 + 6;
+    reportData.forEach((m, i) => {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(13); doc.setTextColor(108, 99, 255);
+      doc.text(`#${m.rank || i+1} ${m.name}`, 20, y); y += 6;
+      doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      doc.text(`${m.params} | ${m.benchmarks}`, 20, y); y += 6;
+      doc.setFontSize(10); doc.setTextColor(50, 50, 70);
+      const lines = doc.splitTextToSize(m.reasoning + ' TIP: ' + m.integration_tip, 170);
+      doc.text(lines, 20, y); y += lines.length * 5 + 10;
+    });
+    doc.save('ai-model-report-arkforge.pdf');
+  }
 
   function fillExample(el) {
     const ta = document.getElementById('use-case');
@@ -606,9 +697,9 @@
     // Store use-case in sessionStorage so the success page can reference it
     sessionStorage.setItem('modeladvisor_usecase', val);
 
-    // Append use-case as a URL-encoded param for the success webhook
-    const encoded = encodeURIComponent(val.slice(0, 500));
-    const checkoutUrl = STRIPE_PAYMENT_LINK + '?client_reference_id=' + encoded;
+    // Build the success return URL (same page with ?paid=1)
+    const successUrl = window.location.origin + window.location.pathname + '?paid=1';
+    const checkoutUrl = STRIPE_PAYMENT_LINK + '?success_url=' + encodeURIComponent(successUrl);
 
     // Redirect to Stripe Payment Link
     window.location.href = checkoutUrl;
@@ -618,6 +709,29 @@
   document.getElementById('use-case').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
       // Do nothing — let user type multi-line naturally
+    }
+  });
+
+  // Post-payment handler: check for ?paid=1 after Stripe redirect
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paid') === '1') {
+      // Hide landing content, show report section
+      document.querySelector('.hero').style.display = 'none';
+      document.querySelector('.card').style.display = 'none';
+      document.querySelector('.trust').style.display = 'none';
+      document.querySelector('.sample').style.display = 'none';
+      document.querySelector('.faq').style.display = 'none';
+      document.getElementById('report-section').style.display = 'block';
+
+      const uc = sessionStorage.getItem('modeladvisor_usecase') || '';
+      if (uc.length > 10) {
+        generateReport(uc);
+      } else {
+        const statusEl = document.getElementById('report-status');
+        statusEl.style.cssText = 'background:#450a0a;border:1px solid #b91c1c;color:#fca5a5;';
+        statusEl.textContent = 'Session expired. Please email support@arkforge.tech with your use-case and we will send your report manually.';
+      }
     }
   });
 </script>
