@@ -5,6 +5,7 @@ Flux : generate_objective → decompose → think → act → assess → evolve/
 """
 
 import json
+import subprocess
 import time
 import traceback
 from datetime import datetime, timezone
@@ -16,6 +17,7 @@ import fitness as fitness_module
 import actions as actions_module
 import memory as memory_module
 import evolver as evolver_module
+import reflect as reflect_module
 import audit
 
 
@@ -31,6 +33,11 @@ class Kernel:
         self.sub_goals = []
         self.current_sub_goal = None
         self.completed_sub_goals = []
+
+        # Phase développementale (spiral curriculum)
+        self.current_phase = "orient"
+        self.current_goal_level = 1
+        self.completed_phases = []  # phases complétées dans le spiral courant
 
         # Suivi stagnation
         self.stagnant_cycles = 0
@@ -55,10 +62,15 @@ class Kernel:
             "session_restored": restored,
         })
 
+        # Synchroniser phase depuis le genome si pas de session restaurée
+        if not restored:
+            self.current_phase = self.genome.get("current_phase", "orient")
+            self.current_goal_level = self.genome.get("current_goal_level", 1)
+
         if restored:
-            print(f"\nGenesis resuming... Generation {self.genome['generation']} | Cycle {self.cycle_id} | Objective: {self.objective['goal'][:60]}...")
+            print(f"\nGenesis resuming... Generation {self.genome['generation']} | Cycle {self.cycle_id} | Phase {self.current_phase.upper()} | Level {self.current_goal_level} | Objective: {self.objective['goal'][:60]}...")
         else:
-            print(f"\nGenesis booting fresh... Generation {self.genome['generation']}")
+            print(f"\nGenesis booting fresh... Generation {self.genome['generation']} | Phase {self.current_phase.upper()} | Goal Level {self.current_goal_level}")
 
     def _save_session(self):
         """Persiste l'état cognitif courant après chaque cycle."""
@@ -73,6 +85,10 @@ class Kernel:
             "stagnant_cycles": self.stagnant_cycles,
             "next_focus": self.next_focus,
             "last_action_result_excerpt": (self.last_action_result or "")[:300],
+            # Phase développementale
+            "current_phase": self.current_phase,
+            "current_goal_level": self.current_goal_level,
+            "completed_phases": self.completed_phases,
         }
         self.SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
         self.SESSION_PATH.write_text(json.dumps(state, indent=2, ensure_ascii=False))
@@ -106,6 +122,9 @@ class Kernel:
         self.stagnant_cycles = state.get("stagnant_cycles", 0)
         self.next_focus = state.get("next_focus")
         self.last_action_result = state.get("last_action_result_excerpt")
+        self.current_phase = state.get("current_phase", "orient")
+        self.current_goal_level = state.get("current_goal_level", 1)
+        self.completed_phases = state.get("completed_phases", [])
         return True
 
     def run(self):
@@ -140,7 +159,7 @@ class Kernel:
                 self._handle_error_as_blocked_cycle(e)
 
     def _acquire_objective(self):
-        """Génère ou adopte l'objectif initial."""
+        """Génère ou adopte l'objectif initial, contraint à la phase courante."""
         memory_ctx = memory_module.get_context({})
 
         if self.initial_objective and self.objective is None:
@@ -152,16 +171,21 @@ class Kernel:
                 "generated_at": datetime.now(timezone.utc).isoformat(),
                 "status": "active",
                 "genome_generation": self.genome["generation"],
+                "phase": self.current_phase,
             }
         else:
-            # Auto-génération
-            print("\nGenerating autonomous objective...")
-            self.objective = objective_module.generate(self.genome, memory_ctx)
+            # Auto-génération contrainte à la phase courante
+            print(f"\nGenerating autonomous objective for phase {self.current_phase.upper()}...")
+            self.objective = objective_module.generate(
+                self.genome, memory_ctx, current_phase=self.current_phase
+            )
 
         self.completed_sub_goals = []
         audit.log_event("objective_acquired", {
             "goal": self.objective["goal"],
             "genome_generation": self.genome["generation"],
+            "phase": self.current_phase,
+            "goal_level": self.current_goal_level,
         })
         audit.print_header(self.objective, self.genome)
 
@@ -184,12 +208,79 @@ class Kernel:
             sg = next((s for s in self.sub_goals if s["id"] == next_id), self.sub_goals[0])
             print(f"  → Next sub-goal: {sg.get('description', next_id)}")
 
+    # MUT-G36-001: when_artifact_missing_run_write_cmd_immediately_do_not_self_modify
+    def _ensure_artifacts(self) -> bool:
+        """
+        Check whether required objective artifacts exist.
+        If the genome's action_preferences defines an all_in_one_write_cmd,
+        run it immediately when any required artifact is absent.
+        Returns True if write command was triggered, False otherwise.
+        """
+        prefs = self.genome.get("action_preferences", {})
+        write_cmd = prefs.get("all_in_one_write_cmd", "")
+        if not write_cmd:
+            return False
+
+        # Derive artifact paths from OBJ_combined_audit_cmd or fitness_criteria
+        criteria = self.genome.get("fitness_criteria", [])
+        missing = []
+        for criterion in criteria:
+            if "exists" in criterion and "brain/" in criterion:
+                # Extract filename hint from criterion string
+                parts = [w for w in criterion.split("_") if w.endswith(".json") or "json" in w]
+                for part in parts:
+                    candidate = Path("brain") / part.replace("brain/", "")
+                    if not candidate.exists():
+                        missing.append(str(candidate))
+
+        if missing:
+            print(f"  [MUT-G36-001] Artifact(s) missing: {missing} — running write_cmd immediately")
+            try:
+                proc = subprocess.run(
+                    write_cmd, shell=True, capture_output=True, text=True, timeout=60
+                )
+                print(f"  [write_cmd stdout] {proc.stdout.strip()[:200]}")
+                if proc.returncode != 0:
+                    print(f"  [write_cmd stderr] {proc.stderr.strip()[:200]}")
+            except Exception as exc:
+                print(f"  [write_cmd error] {exc}")
+            return True
+        return False
+
+    # MUT-G36-002: run_combined_audit_command_verbatim_no_echo_substitution
+    def _run_audit_verbatim(self) -> str:
+        """
+        Execute OBJ_combined_audit_cmd verbatim via subprocess.
+        Never uses echo/printf substitution — opens actual files.
+        Returns raw stdout from the audit command.
+        """
+        prefs = self.genome.get("action_preferences", {})
+        audit_cmd = prefs.get("OBJ_combined_audit_cmd", "")
+        if not audit_cmd:
+            return ""
+        try:
+            proc = subprocess.run(
+                audit_cmd, shell=True, capture_output=True, text=True, timeout=60
+            )
+            output = proc.stdout.strip()
+            print(f"  [MUT-G36-002] Audit output: {output[:300]}")
+            return output
+        except Exception as exc:
+            print(f"  [audit_verbatim error] {exc}")
+            return ""
+
     def _run_cycle(self):
         """Exécute un cycle complet : think → act → assess → evolve/learn."""
         self.cycle_id += 1
 
-        # Contexte mémoire
+        # MUT-G36-001: ensure required artifacts exist before proceeding
+        self._ensure_artifacts()
+
+        # Contexte mémoire + réflexion
         memory_ctx = memory_module.get_context(self.objective)
+        reflection_ctx = reflect_module.get_context(n=3)
+        if reflection_ctx:
+            memory_ctx = memory_ctx + "\n\n" + reflection_ctx if memory_ctx else reflection_ctx
 
         # Sub-goal courant (description)
         sg_obj = next(
@@ -235,7 +326,7 @@ class Kernel:
                 query = result.replace("MEMORY_QUERY:", "").strip()
                 result = memory_module.query(query, self.genome)
 
-            # 3d. Évaluer la fitness
+            # 3d. Évaluer la fitness contre la phase courante
             fitness = fitness_module.assess(
                 objective=self.objective,
                 sub_goal=sg_description,
@@ -243,6 +334,7 @@ class Kernel:
                 action_result=result,
                 cycle_history=self.cycle_history,
                 genome=self.genome,
+                current_phase=self.current_phase,
             )
             # Si fitness est un dict d'erreur LLM → BLOCKED
             if fitness.get("_llm_error"):
@@ -262,6 +354,8 @@ class Kernel:
             "cycle_id": self.cycle_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "genome_generation": self.genome["generation"],
+            "phase": self.current_phase,
+            "goal_level": self.current_goal_level,
             "objective": self.objective["goal"],
             "sub_goal": sg_description,
             "action_type": action.get("type"),
@@ -272,6 +366,7 @@ class Kernel:
             "fitness_score": fitness.get("score"),
             "fitness_reason": fitness.get("reason", ""),
             "fitness_evidence": fitness.get("evidence", ""),
+            "capability_gained": fitness.get("capability_gained"),
             "stagnant_cycles": self.stagnant_cycles,
             "genome_mutated": False,
         }
@@ -285,9 +380,13 @@ class Kernel:
             self.stagnant_cycles += 1
 
             if self.stagnant_cycles >= self.genome.get("stagnation_threshold", 5):
-                print(f"\n[EVOLUTION] Stagnant for {self.stagnant_cycles} cycles — mutating genome...")
+                print(f"\n[EVOLUTION] Stagnant for {self.stagnant_cycles} cycles — analyzing patterns...")
                 stagnant_history = self.cycle_history[-self.stagnant_cycles:]
-                self.genome = evolver_module.mutate(self.genome, stagnant_history, self.objective)
+                reflection = reflect_module.analyze_history(stagnant_history, self.genome, self.objective)
+                if reflection.get("patterns"):
+                    print(f"  Reflection: {len(reflection['patterns'])} pattern(s), {len(reflection.get('proposals', []))} proposal(s)")
+                print(f"  Mutating genome...")
+                self.genome = evolver_module.mutate(self.genome, stagnant_history, self.objective, reflection={"patterns": reflection.get("patterns", []), "proposals": reflection.get("proposals", [])})
                 self.stagnant_cycles = 0
                 cycle_entry["genome_mutated"] = True
                 audit.log_event("genome_mutation", {
@@ -301,11 +400,22 @@ class Kernel:
                 "goal": self.objective["goal"],
                 "cycles_taken": self.cycle_id,
                 "genome_generation": self.genome["generation"],
+                "phase": self.current_phase,
             })
-            self.objective = None
-            self.current_sub_goal = None
-            self.stagnant_cycles = 0
             cycle_entry["objective_completed"] = True
+
+            # En phase convert : vérifier le goal level avant d'avancer
+            if self.current_phase == "convert":
+                if self._check_convert_complete():
+                    self._advance_phase(fitness)
+                else:
+                    # Phase pas encore complète — objectif complété mais level pas atteint
+                    self.objective = None
+                    self.current_sub_goal = None
+                    self.stagnant_cycles = 0
+            else:
+                # Pour toutes les autres phases : DONE = phase complétée
+                self._advance_phase(fitness)
 
         # 6. Avancer vers le prochain sous-but si besoin
         if fitness["status"] == "PROGRESS" and self.current_sub_goal:
@@ -318,6 +428,131 @@ class Kernel:
 
         self.cycle_history.append(cycle_entry)
         self._save_session()
+
+    def _advance_phase(self, fitness: dict):
+        """
+        Avance vers la phase suivante dans la spirale développementale.
+        Après 'reflect' : incrémente le goal level et recommence à 'orient'.
+        """
+        phases = self.genome.get("developmental_phases", [])
+        phase_ids = [p["id"] for p in phases]
+
+        # Mettre à jour capability_inventory si le cycle a produit une nouvelle capacité
+        capability_gained = fitness.get("capability_gained")
+        if capability_gained:
+            inv = self.genome.get("capability_inventory", {})
+            inv[f"cap_{self.cycle_id}"] = {
+                "description": capability_gained,
+                "phase": self.current_phase,
+                "goal_level": self.current_goal_level,
+                "cycle": self.cycle_id,
+            }
+            self.genome["capability_inventory"] = inv
+            genome_module.save(self.genome)
+            print(f"\n  [CAPABILITY] New entry: {capability_gained[:80]}")
+
+        # Déclencher une mutation de phase (apprendre de ce qui a marché)
+        print(f"\n[PHASE COMPLETE] {self.current_phase.upper()} → mutating genome to consolidate learning...")
+        phase_history = [c for c in self.cycle_history if c.get("phase") == self.current_phase]
+        if phase_history:
+            reflection = reflect_module.analyze_history(phase_history, self.genome, self.objective or {})
+            self.genome = evolver_module.mutate(
+                self.genome, phase_history, self.objective or {},
+                reflection={"patterns": reflection.get("patterns", []), "proposals": reflection.get("proposals", [])}
+            )
+
+        # Enregistrer la phase complétée
+        self.completed_phases.append(self.current_phase)
+        audit.log_event("phase_completed", {
+            "phase": self.current_phase,
+            "goal_level": self.current_goal_level,
+            "cycle_id": self.cycle_id,
+        })
+
+        # Phase suivante dans la spirale
+        current_idx = phase_ids.index(self.current_phase) if self.current_phase in phase_ids else -1
+        next_idx = current_idx + 1
+
+        if next_idx >= len(phase_ids):
+            # Fin du spiral courant (après reflect) → avancer le goal level
+            self._advance_goal_level()
+        else:
+            self.current_phase = phase_ids[next_idx]
+            self.genome["current_phase"] = self.current_phase
+            genome_module.save(self.genome)
+            print(f"\n[PHASE] → {self.current_phase.upper()}")
+
+        # Réinitialiser l'objectif pour la nouvelle phase
+        self.objective = None
+        self.current_sub_goal = None
+        self.completed_sub_goals = []
+        self.stagnant_cycles = 0
+
+    def _advance_goal_level(self):
+        """
+        Incrémente le goal level après la completion du spiral complet.
+        Auto-génère le niveau suivant si nécessaire (×10).
+        """
+        self.current_goal_level += 1
+        self.genome["current_goal_level"] = self.current_goal_level
+        self.completed_phases = []  # reset pour le prochain spiral
+
+        # Auto-générer le niveau suivant si absent
+        ladder = self.genome.get("goal_ladder", [])
+        if not any(g["level"] == self.current_goal_level for g in ladder):
+            prev = next((g for g in ladder if g["level"] == self.current_goal_level - 1), {})
+            prev_cents = prev.get("target_cents", 1000)
+            new_cents = prev_cents * 10
+            new_eur = new_cents // 100
+            new_level = {
+                "level": self.current_goal_level,
+                "description": f"Earn €{new_eur} in real Stripe revenue",
+                "target_cents": new_cents,
+                "unlocks": f"level {self.current_goal_level + 1} reachable at {new_eur * 10}€",
+                "verify_cmd": (
+                    f"curl -s 'https://api.stripe.com/v1/balance_transactions?limit=100' "
+                    f"-u $STRIPE_SECRET_KEY: | python3 -c \""
+                    f"import sys,json; d=json.load(sys.stdin); "
+                    f"total=sum(t['amount'] for t in d.get('data',[]) if t['status']=='available'); "
+                    f"print('LEVEL_COMPLETE' if total>={new_cents} else f'PENDING {{total/100:.2f}}EUR')\""
+                ),
+            }
+            ladder.append(new_level)
+            self.genome["goal_ladder"] = ladder
+            print(f"\n[GOAL LADDER] Level {self.current_goal_level} auto-generated: {new_level['description']}")
+
+        # Restart spiral depuis 'orient'
+        self.current_phase = "orient"
+        self.genome["current_phase"] = "orient"
+        genome_module.save(self.genome)
+
+        audit.log_event("goal_level_advanced", {
+            "new_level": self.current_goal_level,
+            "cycle_id": self.cycle_id,
+        })
+        print(f"\n[GOAL LEVEL] → Level {self.current_goal_level} | Phase ORIENT (new spiral begins)")
+
+    def _check_convert_complete(self) -> bool:
+        """
+        En phase convert : vérifie via verify_cmd si le goal level est atteint.
+        Retourne True si LEVEL_COMPLETE.
+        """
+        ladder = self.genome.get("goal_ladder", [])
+        current_goal = next((g for g in ladder if g["level"] == self.current_goal_level), None)
+        if not current_goal or not current_goal.get("verify_cmd"):
+            return False
+        try:
+            proc = subprocess.run(
+                current_goal["verify_cmd"], shell=True,
+                capture_output=True, text=True, timeout=30,
+                env={**__import__("os").environ},
+            )
+            output = proc.stdout.strip()
+            print(f"  [CONVERT CHECK] {output[:120]}")
+            return "LEVEL_COMPLETE" in output
+        except Exception as e:
+            print(f"  [CONVERT CHECK ERROR] {e}")
+            return False
 
     def _maybe_advance_sub_goal(self, fitness: dict):
         """Avance vers le prochain sous-but si le courant semble complété."""
@@ -362,9 +597,13 @@ class Kernel:
 
         # Déclencher évolution si trop de cycles bloqués
         if self.stagnant_cycles >= self.genome.get("stagnation_threshold", 5):
-            print(f"\n[EVOLUTION] Blocked for {self.stagnant_cycles} cycles — mutating genome...")
+            print(f"\n[EVOLUTION] Blocked for {self.stagnant_cycles} cycles — analyzing patterns...")
             stagnant_history = self.cycle_history[-self.stagnant_cycles:]
-            self.genome = evolver_module.mutate(self.genome, stagnant_history, self.objective or {})
+            reflection = reflect_module.analyze_history(stagnant_history, self.genome, self.objective or {})
+            if reflection.get("patterns"):
+                print(f"  Reflection: {len(reflection['patterns'])} pattern(s), {len(reflection.get('proposals', []))} proposal(s)")
+            print(f"  Mutating genome...")
+            self.genome = evolver_module.mutate(self.genome, stagnant_history, self.objective or {}, reflection={"patterns": reflection.get("patterns", []), "proposals": reflection.get("proposals", [])})
             self.stagnant_cycles = 0
             cycle_entry["genome_mutated"] = True
             audit.log_event("genome_mutation", {

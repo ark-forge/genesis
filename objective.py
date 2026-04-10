@@ -12,38 +12,79 @@ import llm
 OBJECTIVE_LOG = Path("brain/objective_log.jsonl")
 
 
-def generate(genome: dict, memory_context: str = "") -> dict:
+def generate(genome: dict, memory_context: str = "", current_phase: str = None) -> dict:
     """
-    Génère un objectif autonome basé sur le génome et la mémoire.
+    Génère un objectif autonome contraint à la phase développementale courante.
     Retourne un dict avec 'goal', 'success_criteria', 'rationale'.
     """
     system = genome["system_role"]
+    ethical_constraints = genome.get("ethical_constraints", [])
+    capability_inventory = genome.get("capability_inventory", {})
+    intrinsic_motivations = genome.get("intrinsic_motivations", {})
+    critical_rule = genome.get("critical_rule", {})
+    strategies = genome.get("strategies", [])
+
+    # Phase courante
+    phases = genome.get("developmental_phases", [])
+    phase_id = current_phase or genome.get("current_phase", "orient")
+    phase = next((p for p in phases if p["id"] == phase_id), None)
+
+    # Niveau de goal courant
+    goal_level = genome.get("current_goal_level", 1)
+    ladder = genome.get("goal_ladder", [])
+    current_goal = next((g for g in ladder if g["level"] == goal_level), {})
+
     prompt = f"""You are Genesis (generation {genome['generation']}).
-Your current strategies: {json.dumps(genome['strategies'], indent=2)}
-Your objective style: {genome['objective_style']}
 
-Recent memory context:
-{memory_context or "(no prior memory — this is your first cycle)"}
+═══ TERMINAL GOAL (north star — do not optimize directly) ═══
+Level {goal_level}: {current_goal.get('description', '')}
+Unlocks: {current_goal.get('unlocks', '')}
 
-Generate ONE objective for yourself to pursue RIGHT NOW.
-The objective must be:
-- Concrete and achievable within multiple action cycles
-- Meaningful (produces real knowledge, code, insight, or artifact)
-- Ambitious enough to require at least 5 action cycles
-- Not previously completed (check memory context)
+═══ CURRENT DEVELOPMENTAL PHASE ═══
+Phase: {phase_id.upper()}
+Question to answer: {phase.get('question', '') if phase else ''}
+Done when: {phase.get('done_when', '') if phase else ''}
+ZPD constraint: {phase.get('zpd_constraint', '') if phase else ''}
+
+You are ONLY working on this phase. Do not skip ahead.
+
+═══ YOUR CAPABILITY INVENTORY ═══
+{json.dumps(capability_inventory, indent=2) if capability_inventory else "(empty — this is what orient phase is for)"}
+
+═══ INTRINSIC MOTIVATIONS ═══
+{json.dumps(intrinsic_motivations, indent=2)}
+
+═══ CRITICAL RULE ═══
+Before acting: {json.dumps(critical_rule.get('before_acting', []))}
+
+═══ ETHICAL CONSTRAINTS (non-negotiable) ═══
+{json.dumps(ethical_constraints, indent=2)}
+
+═══ CURRENT STRATEGIES (from experience) ═══
+{json.dumps(strategies, indent=2) if strategies else "(none yet — strategies emerge from mutations)"}
+
+═══ MEMORY CONTEXT ═══
+{memory_context or "(no prior memory)"}
+
+Generate ONE objective that advances the CURRENT PHASE.
+The objective must satisfy the phase's done_when criterion — not the terminal goal directly.
+Stay within the ZPD constraint.
 
 Respond with JSON:
 {{
-  "goal": "precise description of what you will achieve",
+  "goal": "precise description of what you will do to advance phase '{phase_id}'",
+  "phase_criterion": "which done_when criterion this objective targets",
   "success_criteria": ["criterion 1", "criterion 2", ...],
-  "rationale": "why this objective is valuable right now",
-  "estimated_cycles": <integer>
+  "capability_gained": "what new capability_inventory entry this will produce",
+  "rationale": "why this is in the ZPD and advances the current phase",
+  "estimated_cycles": <integer, 1-5>
 }}"""
 
     result = llm.ask_json(prompt, system=system)
     result["generated_at"] = datetime.now(timezone.utc).isoformat()
     result["status"] = "active"
     result["genome_generation"] = genome["generation"]
+    result["phase"] = phase_id
 
     _log_objective(result)
     return result
