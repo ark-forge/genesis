@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Model Selector — Find the Right AI Model for Your Use Case</title>
+  <meta name="description" content="Compare 50+ LLMs by cost, context length, and task type. Get instant recommendations for your specific use case.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0f14;
+      --surface: #161922;
+      --surface2: #1e2330;
+      --border: #2a2f3e;
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --radius: 12px;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #1a1d2e 0%, #0d0f14 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #818cf8, #a78bfa, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.3);
+      color: var(--accent2);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    /* Filters */
+    .filters-wrap {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .filters {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .filter-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.4rem;
+    }
+    .filter-group select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.2rem;
+    }
+    .filter-group select:focus { border-color: var(--accent); }
+    .results-header {
+      max-width: 960px;
+      margin: 0 auto 1rem;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .results-count {
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    .results-count span { color: var(--accent2); font-weight: 700; }
+    /* Model Cards */
+    .results {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+      display: grid;
+      gap: 1rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1rem;
+      align-items: start;
+      transition: border-color 0.2s, transform 0.15s;
+      cursor: default;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .card.top-pick {
+      border-color: rgba(99,102,241,0.5);
+      background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, var(--surface) 100%);
+    }
+    .rank {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+    .rank.gold { background: rgba(234,179,8,0.15); color: #eab308; }
+    .rank.silver { background: rgba(148,163,184,0.15); color: #94a3b8; }
+    .rank.bronze { background: rgba(180,83,9,0.12); color: #d97706; }
+    .rank.other { background: var(--surface2); color: var(--muted); }
+    .card-body {}
+    .card-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .card-provider {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.5rem;
+    }
+    .tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tag-type-closed { background: rgba(99,102,241,0.12); color: #818cf8; }
+    .tag-type-open { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .tag-task { background: rgba(56,189,248,0.1); color: #38bdf8; }
+    .features { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+    .card-meta {
+      text-align: right;
+      flex-shrink: 0;
+      min-width: 110px;
+    }
+    .score-bar-wrap { margin-bottom: 0.6rem; }
+    .score-label { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .score-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+      width: 100px;
+    }
+    .score-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .score-val { font-size: 0.75rem; font-weight: 700; color: var(--accent2); margin-top: 0.15rem; }
+    .cost-display { margin-top: 0.5rem; }
+    .cost-label { font-size: 0.65rem; color: var(--muted); }
+    .cost-val { font-size: 0.9rem; font-weight: 700; }
+    .cost-free { color: var(--green); }
+    .cost-low { color: #4ade80; }
+    .cost-mid { color: var(--yellow); }
+    .cost-high { color: var(--red); }
+    .ctx-val { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty-state svg { opacity: 0.3; margin-bottom: 1rem; }
+    /* CTA Banner */
+    .cta-banner {
+      max-width: 960px;
+      margin: 0 auto 2rem;
+      padding: 0 1.5rem;
+    }
+    .cta-inner {
+      background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(167,139,250,0.1) 100%);
+      border: 1px solid rgba(99,102,241,0.35);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .cta-text h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .cta-text p { font-size: 0.875rem; color: var(--muted); }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      color: white;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.7rem 1.4rem;
+      border-radius: 8px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    .cta-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+    @media (max-width: 600px) {
+      .card { grid-template-columns: auto 1fr; }
+      .card-meta { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">April 2026 Edition</div>
+  <h1>LLM Model Selector</h1>
+  <p>Filter 50+ open &amp; closed models by cost, context length, and task type — get ranked recommendations instantly.</p>
+</header>
+
+<div class="filters-wrap">
+  <div class="filters">
+    <div class="filter-group">
+      <label>Cost Tier</label>
+      <select id="filter-cost">
+        <option value="all">All prices</option>
+        <option value="free">Free / Self-hosted</option>
+        <option value="budget">Budget (&lt; $1/1M tokens)</option>
+        <option value="mid">Mid ($1–$5/1M)</option>
+        <option value="premium">Premium (&gt; $5/1M)</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Context Length</label>
+      <select id="filter-context">
+        <option value="all">Any context</option>
+        <option value="short">Short (≤ 16K)</option>
+        <option value="standard">Standard (16K–128K)</option>
+        <option value="long">Long (128K–256K)</option>
+        <option value="ultra">Ultra (&gt; 256K)</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Task Type</label>
+      <select id="filter-task">
+        <option value="all">All tasks</option>
+        <option value="code">Code generation</option>
+        <option value="general">General / Chat</option>
+        <option value="reasoning">Reasoning</option>
+        <option value="long-context">Long-context</option>
+        <option value="multimodal">Multimodal</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="results-header">
+  <div class="results-count">Showing <span id="count">0</span> models</div>
+</div>
+
+<div class="cta-banner">
+  <div class="cta-inner">
+    <div class="cta-text">
+      <h3>Want the full 50-model comparison PDF?</h3>
+      <p>Detailed benchmark tables, cost breakdowns, deployment guides &amp; quarterly updates.</p>
+    </div>
+    <a href="https://buy.stripe.com/9B628n1Yl1UM0PC5kk" class="cta-btn" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Get Full Report — €9
+    </a>
+  </div>
+</div>
+
+<div class="results" id="results"></div>
+
+<footer>
+  Data compiled April 2026 &bull; 
+  <a href="https://arkforge.tech" target="_blank" rel="noopener">ArkForge</a> &bull;
+  <a href="../benchmark.html" target="_blank" rel="noopener">Code Benchmark Micro-site</a> &bull;
+  Benchmarks: HumanEval, MBPP, SWE-bench
+</footer>
+
+<script>
+const MODELS = [{"id": "gpt-4o", "name": "GPT-4o", "provider": "OpenAI", "type": "closed", "context_window": 128000, "cost_input_per_1m": 2.5, "cost_output_per_1m": 10.0, "benchmarks": {"HumanEval": 90.2, "MBPP": 87.8, "LiveCodeBench": null, "SWE_bench_verified": 33.2}, "task_types": ["code", "general", "reasoning", "multimodal"], "license": "Proprietary", "params_total": "~200B (est.)", "key_features": ["Multimodal (vision+text)", "Strong coding + reasoning", "128K context", "API access only"]}, {"id": "gpt-4o-mini", "name": "GPT-4o Mini", "provider": "OpenAI", "type": "closed", "context_window": 128000, "cost_input_per_1m": 0.15, "cost_output_per_1m": 0.6, "benchmarks": {"HumanEval": 87.2, "MBPP": 83.1, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code", "general"], "license": "Proprietary", "params_total": "Unknown", "key_features": ["Very low cost", "Fast inference", "128K context", "Good for high-volume tasks"]}, {"id": "claude-opus-4-6", "name": "Claude Opus 4.6", "provider": "Anthropic", "type": "closed", "context_window": 200000, "cost_input_per_1m": 15.0, "cost_output_per_1m": 75.0, "benchmarks": {"HumanEval": 92.0, "MBPP": 91.0, "LiveCodeBench": null, "SWE_bench_verified": 72.5}, "task_types": ["code", "general", "reasoning", "long-context"], "license": "Proprietary", "params_total": "Unknown", "key_features": ["200K context window", "Top SWE-bench score", "Best for agentic coding", "Expensive but powerful"]}, {"id": "claude-sonnet-4-6", "name": "Claude Sonnet 4.6", "provider": "Anthropic", "type": "closed", "context_window": 200000, "cost_input_per_1m": 3.0, "cost_output_per_1m": 15.0, "benchmarks": {"HumanEval": 90.5, "MBPP": 89.0, "LiveCodeBench": null, "SWE_bench_verified": 49.0}, "task_types": ["code", "general", "reasoning", "long-context"], "license": "Proprietary", "params_total": "Unknown", "key_features": ["200K context", "Strong code + reasoning", "Balanced cost/performance", "Best-in-class for agentic tasks"]}, {"id": "claude-haiku-4-5", "name": "Claude Haiku 4.5", "provider": "Anthropic", "type": "closed", "context_window": 200000, "cost_input_per_1m": 0.8, "cost_output_per_1m": 4.0, "benchmarks": {"HumanEval": 78.0, "MBPP": 75.0, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code", "general"], "license": "Proprietary", "params_total": "Unknown", "key_features": ["200K context", "Fast + affordable", "Good for classification and extraction", "Low latency"]}, {"id": "gemini-2.5-pro", "name": "Gemini 2.5 Pro", "provider": "Google", "type": "closed", "context_window": 1000000, "cost_input_per_1m": 1.25, "cost_output_per_1m": 10.0, "benchmarks": {"HumanEval": 91.0, "MBPP": 88.5, "LiveCodeBench": null, "SWE_bench_verified": 63.2}, "task_types": ["code", "general", "reasoning", "long-context", "multimodal"], "license": "Proprietary", "params_total": "Unknown", "key_features": ["1M token context window", "Strong multimodal", "Good code + reasoning", "Very long context tasks"]}, {"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash", "provider": "Google", "type": "closed", "context_window": 1000000, "cost_input_per_1m": 0.075, "cost_output_per_1m": 0.3, "benchmarks": {"HumanEval": 85.0, "MBPP": 82.0, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code", "general", "long-context"], "license": "Proprietary", "params_total": "Unknown", "key_features": ["1M token context", "Cheapest per token", "Fast inference", "Great for high-volume pipelines"]}, {"id": "deepseek-v3", "name": "DeepSeek-V3", "provider": "DeepSeek", "type": "open-weight", "context_window": 128000, "cost_input_per_1m": 0.27, "cost_output_per_1m": 1.1, "benchmarks": {"HumanEval": 91.6, "MBPP": 89.3, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code", "general", "reasoning"], "license": "MIT", "params_total": "671B (MoE, 37B active)", "key_features": ["Open weights (MIT)", "Very low API cost", "Strong all-round performance", "MoE architecture"]}, {"id": "qwen2.5-coder-32b-instruct", "name": "Qwen2.5-Coder-32B-Instruct", "provider": "Alibaba / Qwen Team", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 92.7, "MBPP": 90.2, "LiveCodeBench": 37.2, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Qwen Research License (permissive, allows commercial use)", "params_total": "32B", "key_features": ["State-of-the-art open-weight code model at 32B scale as of late 2024", "Supports 92 programming languages", "Strong on code completion, repair (Aider 73.7), and multi-language tasks", "Context window of 128K tokens"]}, {"id": "qwen2.5-coder-14b-instruct", "name": "Qwen2.5-Coder-14B-Instruct", "provider": "Alibaba / Qwen Team", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 89.6, "MBPP": 86.2, "LiveCodeBench": 23.4, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Qwen Research License", "params_total": "14B", "key_features": ["Strong mid-size open-weight code model", "Supports 92 programming languages", "128K context window"]}, {"id": "qwen2.5-coder-7b-instruct", "name": "Qwen2.5-Coder-7B-Instruct", "provider": "Alibaba / Qwen Team", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 88.4, "MBPP": 83.5, "LiveCodeBench": 18.2, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Qwen Research License", "params_total": "7B", "key_features": ["Best-in-class 7B code model at release", "Supports 92 programming languages", "128K context window"]}, {"id": "qwen2.5-coder-7b-base", "name": "Qwen2.5-Coder-7B-Base", "provider": "Alibaba / Qwen Team", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 61.6, "MBPP": 76.9, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Qwen Research License", "params_total": "7B", "key_features": ["Base (pre-instruction-tuned) variant", "Strongest 7B base code model at release"]}, {"id": "qwen2.5-coder-1.5b-instruct", "name": "Qwen2.5-Coder-1.5B-Instruct", "provider": "Alibaba / Qwen Team", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 70.7, "MBPP": 69.2, "LiveCodeBench": 6.1, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Qwen Research License", "params_total": "1.5B", "key_features": ["Highly capable sub-2B parameter code model", "Suitable for on-device / edge deployment"]}, {"id": "deepseek-coder-v2-instruct", "name": "DeepSeek-Coder-V2-Instruct", "provider": "DeepSeek AI", "type": "open-source", "context_window": 128000, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 90.2, "MBPP": null, "LiveCodeBench": 43.4, "SWE_bench_verified": null}, "task_types": ["code"], "license": "DeepSeek Model License (allows commercial use)", "params_total": "236B", "key_features": ["First open-source model to match GPT-4o on HumanEval and LiveCodeBench (at release)", "First open-source model surpassing 10% on SWE-bench at release", "MoE architecture with 21B active of 236B total params", "128K context window"]}, {"id": "deepseek-coder-v2-lite-instruct", "name": "DeepSeek-Coder-V2-Lite-Instruct", "provider": "DeepSeek AI", "type": "open-source", "context_window": 128000, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 81.1, "MBPP": null, "LiveCodeBench": 24.3, "SWE_bench_verified": null}, "task_types": ["code"], "license": "DeepSeek Model License (allows commercial use)", "params_total": "16B", "key_features": ["Efficient lite variant with only 2.4B active parameters", "Strong performance relative to its active parameter count", "128K context window"]}, {"id": "deepseek-coder-33b-instruct", "name": "DeepSeek-Coder-33B-Instruct", "provider": "DeepSeek AI", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 79.3, "MBPP": 70.8, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "DeepSeek Model License (allows commercial use)", "params_total": "33B", "key_features": ["Original DeepSeek-Coder flagship; outperformed GPT-3.5 on HumanEval at release", "Repository-level code understanding", "Fill-in-the-Middle (FIM) support"]}, {"id": "deepseek-coder-6.7b-instruct", "name": "DeepSeek-Coder-6.7B-Instruct", "provider": "DeepSeek AI", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 78.6, "MBPP": 74.9, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "DeepSeek Model License (allows commercial use)", "params_total": "6.7B", "key_features": ["Strong 7B-class code model", "FIM support", "Instruction-tuned variant"]}, {"id": "qwen3-coder-480b-a35b-instruct", "name": "Qwen3-Coder-480B-A35B-Instruct", "provider": "Alibaba / Qwen Team", "type": "open-source", "context_window": 262144, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 89.3, "MBPP": 78.2, "LiveCodeBench": 70.7, "SWE_bench_verified": 69.6}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "480B", "key_features": ["Qwen3 flagship agentic code model", "256K context window", "Top-tier open-weight performance on LiveCodeBench v5", "SWE-bench Verified 69.6%"]}, {"id": "kimi-k2", "name": "Kimi K2", "provider": "Moonshot AI", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": null, "MBPP": null, "LiveCodeBench": 53.7, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Modified MIT (open weights, some usage restrictions)", "params_total": "1T+", "key_features": ["Top open-source model on LiveCodeBench v6 at release", "Outperformed DeepSeek V3 (46.9%) and GPT-4.1 (44.7%) on LiveCodeBench v6", "Strong agentic coding capabilities"]}, {"id": "kimi-k2.5", "name": "Kimi K2.5", "provider": "Moonshot AI", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 99.0, "MBPP": null, "LiveCodeBench": 85.0, "SWE_bench_verified": 76.8}, "task_types": ["code"], "license": "Open-weight", "params_total": "unknown", "key_features": ["Near-perfect HumanEval score (benchmark effectively saturated at this level)", "Top open-source LiveCodeBench score as of early 2026", "Strong SWE-bench performance"]}, {"id": "devstral-2", "name": "Devstral 2 (Devstral-2-123B)", "provider": "Mistral AI", "type": "open-source", "context_window": 262144, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": null, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": 72.2}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "123B", "key_features": ["Best open-weight model on SWE-bench Verified at release (72.2%)", "256K context window", "Agentic coding-focused model", "Wins 42.8% vs 28.6% loss vs DeepSeek V3.2 in head-to-head"]}, {"id": "devstral-small-2", "name": "Devstral Small 2 (24B)", "provider": "Mistral AI", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": null, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": 68.0}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "24B", "key_features": ["Compact 24B agentic coding model", "Runs on single RTX 4090 or Mac with 32GB RAM", "Fine-tuned from Mistral Small 3.1", "68.0% SWE-bench Verified \u2014 outperforms models 5x larger"]}, {"id": "codestral-25.01", "name": "Codestral 25.01", "provider": "Mistral AI", "type": "open-source", "context_window": 256000, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 86.6, "MBPP": 91.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Mistral AI Research License (not fully open for commercial use)", "params_total": "22B", "key_features": ["Fill-in-the-Middle specialist (code completion)", "256K context window", "Updated from original Codestral (May 2024; 81.1% HumanEval)", "Supports 80+ programming languages"]}, {"id": "codestral-mamba-7b", "name": "Codestral Mamba 7B", "provider": "Mistral AI", "type": "open-source", "context_window": 262144, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 75.0, "MBPP": 68.5, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "7B", "key_features": ["First major Mamba2-based code LLM", "Linear-time inference, theoretical infinite context", "Outperforms CodeGemma-1.1-7B (61.0%) and CodeLlama-34B on HumanEval", "Apache 2.0 license"]}, {"id": "phi-4", "name": "Phi-4", "provider": "Microsoft", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 82.6, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "MIT", "params_total": "14B", "key_features": ["Small but mighty \u2014 outperforms open models up to 70B on many tasks", "Trained on high-quality synthetic datasets", "Strong math (MATH 80.4%) and reasoning alongside code", "MIT license"]}, {"id": "yi-coder-9b-chat", "name": "Yi-Coder-9B-Chat", "provider": "01.AI", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 85.4, "MBPP": 73.8, "LiveCodeBench": 23.4, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "9B", "key_features": ["First open-source <10B model exceeding 20% on LiveCodeBench at release", "First open-source code LLM >50% on CRUXEval-O", "128K context window", "Apache 2.0 license"]}, {"id": "opencoder-8b-instruct", "name": "OpenCoder-8B-Instruct", "provider": "INFLY Tech / OpenCoder Team", "type": "open-source", "context_window": 8192, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 83.5, "MBPP": 79.1, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "8B", "key_features": ["Fully open: open weights AND open training data (OmniCoder dataset)", "Transparent training recipe", "Apache 2.0 license"]}, {"id": "opencoder-1.5b-instruct", "name": "OpenCoder-1.5B-Instruct", "provider": "INFLY Tech / OpenCoder Team", "type": "open-source", "context_window": 8192, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 72.5, "MBPP": 72.7, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "1.5B", "key_features": ["Strongest 1.5B open-weight code model at release", "Open data and weights", "Apache 2.0 license"]}, {"id": "magicoder-s-ds-6.7b", "name": "Magicoder-S-DS-6.7B", "provider": "University of Illinois (UIUC ISE)", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 76.8, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "MIT", "params_total": "6.7B", "key_features": ["OSS-INSTRUCT training method: generates instruction data from open-source code", "Outperforms GPT-3.5 Turbo and Gemini Ultra on HumanEval at 6.7B", "ICML 2024 paper", "MIT license"]}, {"id": "wizardcoder-33b-v1.1", "name": "WizardCoder-33B-V1.1", "provider": "WizardLM Team / Microsoft", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 79.9, "MBPP": 78.9, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "WizardLM (non-commercial research)", "params_total": "33B", "key_features": ["Evol-Instruct methodology for code instruction tuning", "ICLR 2024 paper", "Strong baseline for instruction-tuned code generation"]}, {"id": "wizardcoder-python-34b-v1.0", "name": "WizardCoder-Python-34B-V1.0", "provider": "WizardLM Team / Microsoft", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 73.2, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "WizardLM (non-commercial research)", "params_total": "34B", "key_features": ["Surpassed GPT-4 (March 2023 version) on HumanEval at release", "Built on CodeLlama-Python-34B", "Python-specialized fine-tune"]}, {"id": "phind-codellama-34b-v2", "name": "Phind-CodeLlama-34B-v2", "provider": "Phind", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 73.8, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Llama 2 Community License", "params_total": "34B", "key_features": ["Fine-tuned on 1.5B tokens of high-quality programming data", "Multi-lingual: Python, C/C++, TypeScript, Java and more", "One of the first 34B open-weight models to exceed 73% on HumanEval"]}, {"id": "codellama-70b-instruct", "name": "Code Llama 70B Instruct", "provider": "Meta AI", "type": "open-source", "context_window": 100000, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 67.8, "MBPP": 62.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Llama 2 Community License", "params_total": "70B", "key_features": ["Largest Code Llama variant", "100K context window", "FIM (Fill-in-the-Middle) support", "Instruction-tuned for dialogue and code generation"]}, {"id": "codellama-34b-python", "name": "Code Llama - Python 34B", "provider": "Meta AI", "type": "open-source", "context_window": 100000, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 53.7, "MBPP": 56.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Llama 2 Community License", "params_total": "34B", "key_features": ["Python-specialized fine-tune of CodeLlama-34B", "State-of-the-art open model on HumanEval at release (Aug 2023)", "100K context window"]}, {"id": "codellama-7b-instruct", "name": "Code Llama 7B Instruct", "provider": "Meta AI", "type": "open-source", "context_window": 100000, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 34.8, "MBPP": 44.4, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Llama 2 Community License", "params_total": "7B", "key_features": ["Smallest instruction-tuned Code Llama", "FIM support", "Widely used baseline"]}, {"id": "starcoder2-15b", "name": "StarCoder2-15B", "provider": "BigCode (ServiceNow, Hugging Face, NVIDIA)", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 46.3, "MBPP": 66.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "BigCode OpenRAIL-M", "params_total": "15B", "key_features": ["Matches or outperforms CodeLlama-34B despite half the parameters", "Trained on 4T tokens from The Stack v2", "Supports 619 programming languages", "Grouped Query Attention for efficient inference"]}, {"id": "starcoder2-7b", "name": "StarCoder2-7B", "provider": "BigCode (ServiceNow, Hugging Face, NVIDIA)", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 35.4, "MBPP": 54.4, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "BigCode OpenRAIL-M", "params_total": "7B", "key_features": ["Outperforms CodeLlama-7B on most benchmarks", "Supports 619 programming languages", "Trained on The Stack v2"]}, {"id": "starcoder2-3b", "name": "StarCoder2-3B", "provider": "BigCode (ServiceNow, Hugging Face, NVIDIA)", "type": "open-source", "context_window": 16384, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 31.7, "MBPP": 60.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "BigCode OpenRAIL-M", "params_total": "3B", "key_features": ["Outperforms StarCoderBase-15B despite being 5x smaller", "Strong 3B baseline across languages", "Supports 619 programming languages"]}, {"id": "starcoder-15b", "name": "StarCoder (15.5B)", "provider": "BigCode (Hugging Face, ServiceNow)", "type": "open-source", "context_window": 8192, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 33.6, "MBPP": 52.7, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "BigCode OpenRAIL-M", "params_total": "15.5B", "key_features": ["Original BigCode flagship model", "Trained on 1T tokens from The Stack", "Supports 80+ programming languages", "FIM support"]}, {"id": "octocoder", "name": "OctoCoder (15.5B)", "provider": "BigCode (Hugging Face, ServiceNow)", "type": "open-source", "context_window": 8192, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 46.2, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "BigCode OpenRAIL-M", "params_total": "15.5B", "key_features": ["StarCoder fine-tuned on CommitPackFT + OASST (instruction data)", "OctoPack paper (2023)", "Improved instruction-following vs base StarCoder"]}, {"id": "codegemma-7b-it", "name": "CodeGemma 7B-IT (Instruction Tuned)", "provider": "Google DeepMind", "type": "open-source", "context_window": 8192, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 56.1, "MBPP": 54.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Gemma Terms of Use (allows commercial use with conditions)", "params_total": "7B", "key_features": ["Google's open-weight code model built on Gemma", "Code generation, understanding, and completion", "Also available in 2B and infilling (PT) variants"]}, {"id": "codegemma-7b-it-1.1", "name": "CodeGemma 7B-IT 1.1", "provider": "Google DeepMind", "type": "open-source", "context_window": 8192, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 60.4, "MBPP": 55.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Gemma Terms of Use", "params_total": "7B", "key_features": ["Updated instruction-tuned variant with improved performance", "Better safety alignment"]}, {"id": "granite-34b-code-instruct", "name": "Granite-34B-Code-Instruct-8K", "provider": "IBM Research", "type": "open-source", "context_window": 8192, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 62.2, "MBPP": 47.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "34B", "key_features": ["IBM enterprise-grade code model family", "Evaluated on HumanEvalPack across 6 languages", "Apache 2.0 license \u2014 fully commercially usable", "Trained on code data with data provenance tracking"]}, {"id": "granite-8b-code-instruct", "name": "Granite-8B-Code-Instruct-4K", "provider": "IBM Research", "type": "open-source", "context_window": 4096, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": null, "MBPP": 42.2, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "8B", "key_features": ["Best open 7-8B code model on HumanEvalPack average at release per IBM report", "Apache 2.0 license", "Outperforms CodeGemma-8B on HumanEvalPack (33.2% vs 21.3%)"]}, {"id": "granite-3b-code-base", "name": "Granite-3B-Code-Base", "provider": "IBM Research", "type": "open-source", "context_window": 4096, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": null, "MBPP": 36.0, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "3B", "key_features": ["Smallest Granite Code model", "Apache 2.0 license", "Transparent data provenance"]}, {"id": "codet5plus-16b-instruct", "name": "InstructCodeT5+ 16B", "provider": "Salesforce Research", "type": "open-source", "context_window": 2048, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 36.1, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "BSD-3-Clause", "params_total": "16B", "key_features": ["Instruction-tuned CodeT5+ variant", "EMNLP 2023 paper", "Flexible encoder-decoder; handles understanding AND generation", "Surpassed OpenAI code-cushman-001 on HumanEval at release"]}, {"id": "starcoder-santacoder-1.1b", "name": "SantaCoder (1.1B)", "provider": "BigCode (Hugging Face)", "type": "open-source", "context_window": 2048, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 18.0, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "BigCode OpenRAIL-M", "params_total": "1.1B", "key_features": ["Tiny but effective: 1.1B parameters beating much larger models at Python/Java/JS", "Supports Python, Java, JavaScript", "Predecessor to StarCoder"]}, {"id": "incoder-6.7b", "name": "InCoder-6.7B", "provider": "Facebook AI Research / UC Berkeley", "type": "open-source", "context_window": 2048, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 15.2, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "CC BY-NC 4.0", "params_total": "6.7B", "key_features": ["Pioneered infilling (FIM) training objective for code", "ICLR 2023 paper", "Trained on The Stack of GitHub permissively-licensed code", "Also available in 1.3B"]}, {"id": "polycoder-2.7b", "name": "PolyCoder-2.7B", "provider": "Carnegie Mellon University", "type": "open-source", "context_window": 2048, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 5.6, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "MIT", "params_total": "2.7B", "key_features": ["One of the first fully open-source code LLMs", "Trained on 249GB of code from 12 programming languages", "Historical significance as early open code model", "Also available in 160M and 400M"]}, {"id": "codegen-16b-mono", "name": "CodeGen-Mono 16B", "provider": "Salesforce Research", "type": "open-source", "context_window": 2048, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 29.3, "MBPP": null, "LiveCodeBench": null, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0", "params_total": "16.1B", "key_features": ["Multi-turn program synthesis (CONCODE)", "Mono variant: Python-specialized", "One of the strongest open models at 2022 release", "Also available in 2B, 6B, 350M"]}, {"id": "codeqwen1.5-7b-chat", "name": "CodeQwen1.5-7B-Chat", "provider": "Alibaba / Qwen Team", "type": "open-source", "context_window": 65536, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 83.5, "MBPP": 78.7, "LiveCodeBench": 43.3, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Tongyi Qianwen License", "params_total": "7B", "key_features": ["Predecessor to Qwen2.5-Coder series", "Strong 7B chat model for code at release", "64K context window", "BigCodeBench 77.7"]}, {"id": "glm-4.7-9b", "name": "GLM-4.7 (9B)", "provider": "Zhipu AI / Tsinghua KEG", "type": "open-source", "context_window": 131072, "cost_input_per_1m": 0, "cost_output_per_1m": 0, "benchmarks": {"HumanEval": 94.2, "MBPP": null, "LiveCodeBench": 84.9, "SWE_bench_verified": null}, "task_types": ["code"], "license": "Apache 2.0 (model weights)", "params_total": "9B", "key_features": ["Extremely high LiveCodeBench score (84.9) for its 9B size class", "Top open-source performance on competitive programming benchmarks", "Strong HMMT 2025 score (97.1)"]}];
+
+function costTier(m) {
+  const c = m.cost_input_per_1m;
+  if (c === 0) return 'free';
+  if (c < 1) return 'budget';
+  if (c <= 5) return 'mid';
+  return 'premium';
+}
+
+function contextBucket(ctx) {
+  if (ctx <= 16384) return 'short';
+  if (ctx <= 131072) return 'standard';
+  if (ctx <= 262144) return 'long';
+  return 'ultra';
+}
+
+function topBenchmark(m) {
+  const b = m.benchmarks;
+  const vals = Object.values(b).filter(v => v != null);
+  return vals.length ? Math.max(...vals) : null;
+}
+
+function modelScore(m, taskFilter) {
+  let score = 0;
+  const bench = topBenchmark(m);
+  if (bench) score += bench * 0.6;
+  score += Math.min(Math.log10(m.context_window / 1000) * 20, 40);
+  if (m.cost_input_per_1m === 0) score += 10;
+  else score -= Math.min(m.cost_input_per_1m * 2, 20);
+  if (m.benchmarks.SWE_bench_verified) score += m.benchmarks.SWE_bench_verified * 0.3;
+  return score;
+}
+
+function costDisplay(m) {
+  const c = m.cost_input_per_1m;
+  if (c === 0) return { cls: 'cost-free', txt: 'Free' };
+  if (c < 0.5) return { cls: 'cost-low', txt: '$' + c.toFixed(3) + '/1M' };
+  if (c <= 5) return { cls: 'cost-mid', txt: '$' + c.toFixed(2) + '/1M' };
+  return { cls: 'cost-high', txt: '$' + c.toFixed(1) + '/1M' };
+}
+
+function ctxFmt(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(0) + 'M ctx';
+  return (n/1000).toFixed(0) + 'K ctx';
+}
+
+function rankClass(i) {
+  if (i === 0) return 'gold';
+  if (i === 1) return 'silver';
+  if (i === 2) return 'bronze';
+  return 'other';
+}
+
+function render() {
+  const costF = document.getElementById('filter-cost').value;
+  const ctxF = document.getElementById('filter-context').value;
+  const taskF = document.getElementById('filter-task').value;
+
+  let filtered = MODELS.filter(m => {
+    if (costF !== 'all' && costTier(m) !== costF) return false;
+    if (ctxF !== 'all' && contextBucket(m.context_window) !== ctxF) return false;
+    if (taskF !== 'all' && !m.task_types.includes(taskF)) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => modelScore(b, taskF) - modelScore(a, taskF));
+
+  document.getElementById('count').textContent = filtered.length;
+
+  const container = document.getElementById('results');
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <p>No models match your filters. Try broadening your criteria.</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map((m, i) => {
+    const bench = topBenchmark(m);
+    const benchPct = bench ? Math.min(bench, 100) : 0;
+    const cd = costDisplay(m);
+    const isOpen = m.type === 'open' || m.cost_input_per_1m === 0;
+    const typeTag = isOpen
+      ? '<span class="tag tag-type-open">Open</span>'
+      : '<span class="tag tag-type-closed">API</span>';
+    const taskTags = m.task_types.slice(0,3).map(t =>
+      `<span class="tag tag-task">${t}</span>`
+    ).join('');
+    const features = m.key_features ? m.key_features.slice(0,2).join(' · ') : '';
+    const swe = m.benchmarks.SWE_bench_verified;
+    const scoreBlock = bench
+      ? `<div class="score-bar-wrap">
+          <div class="score-label">HumanEval / Best benchmark</div>
+          <div class="score-bar"><div class="score-fill" style="width:${benchPct}%"></div></div>
+          <div class="score-val">${bench.toFixed(1)}</div>
+        </div>`
+      : '';
+    const sweBlock = swe
+      ? `<div class="score-bar-wrap">
+          <div class="score-label">SWE-bench verified</div>
+          <div class="score-bar"><div class="score-fill" style="width:${Math.min(swe,100)}%;background:linear-gradient(90deg,#22c55e,#4ade80)"></div></div>
+          <div class="score-val">${swe.toFixed(1)}%</div>
+        </div>`
+      : '';
+    return `<div class="card${i===0?' top-pick':''}">
+      <div class="rank ${rankClass(i)}">${i+1}</div>
+      <div class="card-body">
+        <div class="card-name">${m.name}</div>
+        <div class="card-provider">${m.provider} · ${m.params_total || ''}</div>
+        <div class="tags">${typeTag}${taskTags}</div>
+        <div class="features">${features}</div>
+      </div>
+      <div class="card-meta">
+        ${scoreBlock}${sweBlock}
+        <div class="cost-display">
+          <div class="cost-label">Input cost</div>
+          <div class="cost-val ${cd.cls}">${cd.txt}</div>
+        </div>
+        <div class="ctx-val">${ctxFmt(m.context_window)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('filter-cost').addEventListener('change', render);
+document.getElementById('filter-context').addEventListener('change', render);
+document.getElementById('filter-task').addEventListener('change', render);
+
+render();
+</script>
+</body>
+</html>
