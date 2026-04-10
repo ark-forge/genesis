@@ -1,0 +1,92 @@
+# Genesis
+
+A self-evolving cognitive kernel that pursues objectives autonomously, mutates its own genome when it stagnates, and accumulates knowledge across generations.
+
+## How it works
+
+Genesis runs a continuous loop:
+
+```
+generate_objective → decompose → think → act → assess → evolve → repeat
+```
+
+1. **Objective** — if none is provided, Genesis generates one from its genome and memory
+2. **Decompose** — breaks the objective into ordered sub-goals
+3. **Act** — proposes and executes an action (shell, file write/read, web fetch, LLM reasoning)
+4. **Assess** — evaluates the result: `PROGRESS`, `STAGNANT`, `BLOCKED`, or `DONE`
+5. **Evolve** — after N stagnant cycles, mutates the genome; Claude generates the new strategy set
+
+Session state is persisted after every cycle — Genesis resumes where it left off on restart.
+
+## Genome
+
+The genome is the cognitive DNA: `system_role`, `strategies`, `action_preferences`, `fitness_criteria`, `stagnation_threshold`. Each mutation creates a new generation and archives the previous one in `brain/genome_history/`.
+
+Current state: **generation 50**, **186 cycles**, top fitness **0.83**.
+
+## Quick start
+
+```bash
+cd /tmp/genesis
+
+# Auto-generate an objective
+python3 run.py
+
+# Provide an objective
+python3 run.py "analyze strategy_effectiveness.json and produce a ranked action plan"
+
+# Limit cycles
+python3 run.py --cycles 20
+```
+
+Interrupt with `Ctrl+C` — state is saved and resumable.
+
+## Action types
+
+| Type | What it does |
+|------|-------------|
+| `shell` | Run a bash command |
+| `file_write` | Write content to a file |
+| `file_read` | Read a file |
+| `web_fetch` | Fetch a URL via curl |
+| `llm_reason` | Delegate a sub-reasoning task to Claude |
+| `memory_query` | Query semantic memory |
+| `self_modify` | Signal the evolver to mutate the genome |
+
+## File structure
+
+```
+genesis/
+├── run.py              # Entry point
+├── kernel.py           # Main cognitive loop
+├── genome.py           # Genome load/save/seed
+├── objective.py        # Objective generation and decomposition
+├── actions.py          # Action proposal and execution
+├── fitness.py          # Cycle assessment (PROGRESS/STAGNANT/BLOCKED/DONE)
+├── evolver.py          # Genome mutation engine
+├── reflect.py          # Pattern analysis over stagnant history
+├── memory.py           # Semantic memory (record, reinforce, query)
+├── llm.py              # Claude CLI wrapper (uses Claude Max quota)
+├── audit.py            # Event and cycle logging
+└── brain/
+    ├── genome.json              # Current genome
+    ├── genome_history/          # Archived genomes by generation
+    ├── session_state.json       # Resumable session state
+    ├── memory.jsonl             # Episodic memory
+    ├── objective_log.jsonl      # All objectives attempted
+    ├── reflection_log.jsonl     # Stagnation pattern analyses
+    └── [artifacts]              # Knowledge artifacts produced by objectives
+```
+
+## LLM backend
+
+Genesis calls `claude --print --output-format json --dangerously-skip-permissions` via subprocess. It consumes Claude Max quota (not the API). Haiku/Mistral are not used.
+
+## Evolution mechanics
+
+When `stagnant_cycles >= stagnation_threshold` (default: 5), the evolver:
+1. Analyzes the stagnant cycle history for patterns (via `reflect.py`)
+2. Asks Claude to propose a genome mutation with new strategies and `system_role`
+3. Archives the old genome, adopts the new one, resets the stagnation counter
+
+The genome accumulates hard-won constraints in `strategies` — e.g. "never echo hardcoded PASS strings", "write artifacts atomically in one shell execution" — preventing recurrence of past failure modes.
