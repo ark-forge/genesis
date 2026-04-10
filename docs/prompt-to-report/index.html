@@ -694,15 +694,12 @@
     ta.classList.remove('invalid');
     errEl.style.display = 'none';
 
-    // Store use-case in sessionStorage so the success page can reference it
-    sessionStorage.setItem('modeladvisor_usecase', val);
-
-    // Build the success return URL (same page with ?paid=1)
-    const successUrl = window.location.origin + window.location.pathname + '?paid=1';
-    const checkoutUrl = STRIPE_PAYMENT_LINK + '?success_url=' + encodeURIComponent(successUrl);
+    // Store use-case in localStorage so it survives cross-origin Stripe redirect
+    localStorage.setItem('modeladvisor_usecase', val);
 
     // Redirect to Stripe Payment Link
-    window.location.href = checkoutUrl;
+    // Success URL (?paid=1) must be configured in the Stripe Dashboard for this link
+    window.location.href = STRIPE_PAYMENT_LINK;
   }
 
   // Allow Enter+Shift in textarea, but trap plain Enter for accessibility
@@ -724,7 +721,7 @@
       document.querySelector('.faq').style.display = 'none';
       document.getElementById('report-section').style.display = 'block';
 
-      const uc = sessionStorage.getItem('modeladvisor_usecase') || '';
+      const uc = localStorage.getItem('modeladvisor_usecase') || '';
       if (uc.length > 10) {
         generateReport(uc);
       } else {
