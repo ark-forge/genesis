@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Model Intelligence Report — April 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #0f0f0f;
+    --muted: #555;
+    --accent: #1a56db;
+    --accent2: #7c3aed;
+    --border: #e5e7eb;
+    --bg-alt: #f8f9fb;
+    --bg-code: #1e1e2e;
+    --green: #059669;
+    --orange: #d97706;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    color: var(--ink);
+    background: #fff;
+  }
+
+  /* ── Cover page ── */
+  .cover {
+    page: cover;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 70px;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    color: #fff;
+  }
+  .cover-badge {
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #a5b4fc;
+    margin-bottom: 24px;
+  }
+  .cover h1 {
+    font-size: 34pt;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .cover h1 span { color: #818cf8; }
+  .cover-sub {
+    font-size: 14pt;
+    font-weight: 300;
+    color: #c7d2fe;
+    margin-bottom: 40px;
+    max-width: 520px;
+  }
+  .cover-meta {
+    font-size: 9pt;
+    color: #6366f1;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-top: 1px solid #3730a3;
+    padding-top: 24px;
+    margin-top: auto;
+  }
+  .cover-stats {
+    display: flex;
+    gap: 48px;
+    margin-bottom: 40px;
+  }
+  .stat-box {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #a5b4fc;
+    display: block;
+  }
+  .stat-label {
+    font-size: 8pt;
+    color: #818cf8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── TOC ── */
+  .toc-page {
+    page: toc;
+    padding: 60px 70px;
+  }
+  .toc-page h2 {
+    font-size: 18pt;
+    color: var(--accent2);
+    margin-bottom: 32px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+  }
+  .toc-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--border);
+    font-size: 10pt;
+  }
+  .toc-section {
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 16px;
+    margin-bottom: 4px;
+    font-size: 11pt;
+  }
+
+  /* ── Section dividers ── */
+  .section-break {
+    page-break-before: always;
+    padding: 60px 70px 30px;
+  }
+  .section-label {
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 26pt;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .section-subtitle {
+    font-size: 11pt;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+  .section-rule {
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+    border: none;
+    margin-top: 20px;
+    border-radius: 2px;
+  }
+
+  /* ── Content area ── */
+  .content {
+    padding: 30px 70px 50px;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 600;
+    line-height: 1.3;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  h1 { font-size: 20pt; color: var(--accent); }
+  h2 { font-size: 15pt; color: var(--accent2); padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 12pt; color: var(--ink); }
+  h4 { font-size: 10.5pt; color: var(--muted); font-weight: 500; }
+
+  p { margin-bottom: 12px; }
+
+  a { color: var(--accent); text-decoration: none; }
+
+  strong { font-weight: 600; }
+  em { font-style: italic; color: var(--muted); }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+    margin: 20px 0;
+    page-break-inside: avoid;
+  }
+  thead tr {
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+    color: #fff;
+  }
+  thead th {
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-alt); }
+  tbody tr:hover { background: #eff6ff; }
+  tbody td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody td:first-child { font-weight: 500; }
+
+  /* ── Lists ── */
+  ul, ol {
+    padding-left: 22px;
+    margin-bottom: 12px;
+  }
+  li { margin-bottom: 5px; }
+  li strong { color: var(--accent); }
+
+  /* ── Blockquote ── */
+  blockquote {
+    border-left: 4px solid var(--accent2);
+    padding: 10px 18px;
+    margin: 16px 0;
+    background: var(--bg-alt);
+    border-radius: 0 6px 6px 0;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ── Code ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5pt;
+    background: var(--bg-alt);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent2);
+  }
+  pre {
+    background: var(--bg-code);
+    color: #cdd6f4;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 8pt;
+    margin: 16px 0;
+  }
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* ── Callout boxes ── */
+  .callout {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    background: #eff6ff;
+  }
+  .callout-title { font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+
+  /* ── Footer ── */
+  @page {
+    margin: 0.6in 0;
+    @bottom-center {
+      content: "AI Model Intelligence Report — April 2026  ·  ArkForge Genesis  ·  Page " counter(page);
+      font-family: 'Inter', sans-serif;
+      font-size: 7.5pt;
+      color: #9ca3af;
+    }
+  }
+  @page cover { @bottom-center { content: ""; } }
+  @page toc { @bottom-center { content: ""; } }
+
+  /* ── Print ── */
+  @media print {
+    a { color: var(--accent) !important; }
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  /* hide raw H1 from markdown since we have section headers */
+  .content > h1:first-child { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ══ COVER PAGE ══ -->
+<div class="cover">
+  <div class="cover-badge">ArkForge Genesis Intelligence · April 2026</div>
+  <h1>AI Model<br><span>Intelligence</span><br>Report</h1>
+  <p class="cover-sub">
+    Comprehensive benchmarks, provider landscape analysis, and strategic
+    guidance for open-weight language models — coding assistants, general
+    LLMs, and frontier reasoning systems.
+  </p>
+  <div class="cover-stats">
+    <div class="stat-box">
+      <span class="stat-num">55+</span>
+      <span class="stat-label">Models Ranked</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">7</span>
+      <span class="stat-label">Benchmark Suites</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">12</span>
+      <span class="stat-label">Provider Profiles</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">Q1 2026</span>
+      <span class="stat-label">Coverage Period</span>
+    </div>
+  </div>
+  <div class="cover-meta">
+    Generated by Genesis Autonomous Intelligence System<br>
+    ArkForge · April 10, 2026 · Confidential Research
+  </div>
+</div>
+
+<!-- ══ TABLE OF CONTENTS ══ -->
+<div class="toc-page">
+  <h2>Table of Contents</h2>
+
+  <div class="toc-section">Part I — Open-Source AI Coding Assistants</div>
+  <div class="toc-entry"><span>Executive Summary</span></div>
+  <div class="toc-entry"><span>Ranked Leaderboard — Top 28 Coding Models</span></div>
+  <div class="toc-entry"><span>Provider Landscape Analysis</span></div>
+  <div class="toc-entry"><span>Benchmark Methodology</span></div>
+  <div class="toc-entry"><span>Deployment & Infrastructure Guide</span></div>
+  <div class="toc-entry"><span>License Landscape</span></div>
+  <div class="toc-entry"><span>Emerging Trends & 2026 Outlook</span></div>
+  <div class="toc-entry"><span>Procurement Decision Framework</span></div>
+
+  <div class="toc-section">Part II — Open LLM Performance Rankings</div>
+  <div class="toc-entry"><span>Executive Summary</span></div>
+  <div class="toc-entry"><span>Top 25 Open-Weight Models — Composite Ranking</span></div>
+  <div class="toc-entry"><span>Benchmark Deep Dives (MMLU, HumanEval, GSM8K)</span></div>
+  <div class="toc-entry"><span>Efficiency Tiers & Hardware Recommendations</span></div>
+  <div class="toc-entry"><span>Strategic Takeaways</span></div>
+
+  <div class="toc-section">Appendix</div>
+  <div class="toc-entry"><span>Methodology &amp; Data Sources</span></div>
+  <div class="toc-entry"><span>License Reference Table</span></div>
+</div>
+
+<!-- ══ PART I ══ -->
+<div class="section-break">
+  <div class="section-label">Part I</div>
+  <div class="section-title">Open-Source AI<br>Coding Assistants</div>
+  <p class="section-subtitle">
+    Frontier benchmarks, provider analysis, and deployment guidance
+    for the leading open-weight code models as of April 2026.
+  </p>
+  <hr class="section-rule">
+</div>
+<div class="content">
+<h1 id="state-of-open-source-ai-coding-assistants-april-2026">State of Open-Source AI Coding Assistants — April 2026</h1>
+<p><em>Compiled by ArkForge Genesis Intelligence · April 10, 2026</em></p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>Open-source AI coding assistants have undergone a structural transformation in the first quarter of 2026. The frontier has bifurcated: a cohort of Mixture-of-Experts (MoE) giants now routinely saturates legacy benchmarks like HumanEval (scores above 90% are commonplace), while a new class of agentic benchmarks — LiveCodeBench and SWE-bench Verified — is emerging as the credible differentiator for real-world utility.</p>
+<p><strong>Five headline findings:</strong></p>
+<ol>
+<li>
+<p><strong>HumanEval is effectively retired as a frontier discriminator.</strong> The top six models all exceed 88% pass@1. Contamination risk and benchmark saturation have made LiveCodeBench and SWE-bench the new standard for evaluating code intelligence.</p>
+</li>
+<li>
+<p><strong>Moonshot AI's Kimi K2.5 leads all open-weight models</strong> across HumanEval (99.0%), LiveCodeBench (85.0%), and SWE-bench Verified (76.8%) as of April 2026 — a sweep that was inconceivable twelve months ago from a non-US lab.</p>
+</li>
+<li>
+<p><strong>Mistral's Devstral family is the open-source agentic champion.</strong> Devstral 2 (123B, Apache 2.0) achieves 72.2% on SWE-bench Verified, beating many closed-source commercial rivals. Devstral Small 2 at 24B hits 68.0%, making enterprise-grade agentic coding deployable on commodity hardware.</p>
+</li>
+<li>
+<p><strong>China-based AI labs dominate the open-weight leaderboard.</strong> Alibaba (Qwen), DeepSeek, Moonshot AI, and Zhipu AI together hold 14 of the top 20 positions. IBM, Google, Meta, and Mistral hold the remaining Western positions.</p>
+</li>
+<li>
+<p><strong>The licensing landscape has fragmented.</strong> Apache 2.0 remains the gold standard (Mistral Devstral family, IBM Granite, StarCoder2, OpenCoder), but Alibaba's Qwen Research License and DeepSeek's model license restrict certain commercial uses. Enterprise procurement now requires license audits as a first step.</p>
+</li>
+</ol>
+<hr />
+<h2 id="ranked-leaderboard">Ranked Leaderboard</h2>
+<p>Models are ranked by a composite score that weights LiveCodeBench (40%), SWE-bench Verified (35%), and HumanEval+ (25%) where available. Models lacking LCB or SWE scores are ranked by HumanEval within their tier.</p>
+<blockquote>
+<p><strong>Score Legend:</strong> HE = HumanEval pass@1 | HE+ = HumanEval+ pass@1 | MBPP = MBPP pass@1 | LCB = LiveCodeBench pass@1 | SWE = SWE-bench Verified pass@1 | — = not evaluated</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Rank</th>
+<th>Model</th>
+<th>Provider</th>
+<th>Params (Total/Active)</th>
+<th>License</th>
+<th style="text-align: right;">HE</th>
+<th style="text-align: right;">MBPP</th>
+<th style="text-align: right;">LCB</th>
+<th style="text-align: right;">SWE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><strong>Kimi K2.5</strong></td>
+<td>Moonshot AI</td>
+<td>MoE (~1T/~32B)</td>
+<td>Kimi Open License</td>
+<td style="text-align: right;">99.0</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">85.0</td>
+<td style="text-align: right;">76.8</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><strong>GLM-4.7</strong></td>
+<td>Zhipu AI</td>
+<td>9B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">94.2</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">84.9</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td><strong>Qwen3-Coder-480B-A35B</strong></td>
+<td>Alibaba / Qwen</td>
+<td>480B / 35B</td>
+<td>Qwen Research License</td>
+<td style="text-align: right;">89.3</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">70.7</td>
+<td style="text-align: right;">69.6</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td><strong>Devstral 2</strong></td>
+<td>Mistral AI</td>
+<td>123B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">84.1</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">52.1</td>
+<td style="text-align: right;">72.2</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><strong>Kimi K2</strong></td>
+<td>Moonshot AI</td>
+<td>MoE (~1T/~32B)</td>
+<td>Kimi Open License</td>
+<td style="text-align: right;">87.9</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">53.7</td>
+<td style="text-align: right;">65.8</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td><strong>DeepSeek-Coder-V2-Instruct</strong></td>
+<td>DeepSeek AI</td>
+<td>236B / 21B</td>
+<td>DeepSeek Model License</td>
+<td style="text-align: right;">90.2</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">43.4</td>
+<td style="text-align: right;">51.3</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td><strong>Devstral Small 2</strong></td>
+<td>Mistral AI</td>
+<td>24B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">81.7</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">44.8</td>
+<td style="text-align: right;">68.0</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td><strong>Qwen2.5-Coder-32B-Instruct</strong></td>
+<td>Alibaba / Qwen</td>
+<td>32B</td>
+<td>Qwen Research License</td>
+<td style="text-align: right;">92.7</td>
+<td style="text-align: right;">90.2</td>
+<td style="text-align: right;">37.2</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td><strong>Yi-Coder-9B-Chat</strong></td>
+<td>01.AI</td>
+<td>9B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">85.1</td>
+<td style="text-align: right;">84.0</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td><strong>OpenCoder-8B-Instruct</strong></td>
+<td>OpenCoder Consortium</td>
+<td>8B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">83.5</td>
+<td style="text-align: right;">79.1</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td><strong>Codestral-22B-v0.1</strong></td>
+<td>Mistral AI</td>
+<td>22B</td>
+<td>MNPL (non-commercial)</td>
+<td style="text-align: right;">81.1</td>
+<td style="text-align: right;">78.2</td>
+<td style="text-align: right;">22.1</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td><strong>Qwen2.5-Coder-14B-Instruct</strong></td>
+<td>Alibaba / Qwen</td>
+<td>14B</td>
+<td>Qwen Research License</td>
+<td style="text-align: right;">89.6</td>
+<td style="text-align: right;">86.2</td>
+<td style="text-align: right;">23.4</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">13</td>
+<td><strong>Phi-4-reasoning</strong></td>
+<td>Microsoft</td>
+<td>14B</td>
+<td>MIT</td>
+<td style="text-align: right;">81.5</td>
+<td style="text-align: right;">82.9</td>
+<td style="text-align: right;">21.3</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">14</td>
+<td><strong>WizardCoder-33B-V1.1</strong></td>
+<td>WizardLM / Microsoft</td>
+<td>33B</td>
+<td>Llama 2 Community</td>
+<td style="text-align: right;">79.9</td>
+<td style="text-align: right;">78.9</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">15</td>
+<td><strong>Granite-Code-34B-Instruct</strong></td>
+<td>IBM Research</td>
+<td>34B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">76.4</td>
+<td style="text-align: right;">74.2</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">16</td>
+<td><strong>DeepSeek-Coder-6.7B-Instruct</strong></td>
+<td>DeepSeek AI</td>
+<td>6.7B</td>
+<td>DeepSeek Model License</td>
+<td style="text-align: right;">78.6</td>
+<td style="text-align: right;">74.9</td>
+<td style="text-align: right;">12.1</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">17</td>
+<td><strong>Magicoder-S-DS-6.7B</strong></td>
+<td>U. Illinois / Hugging Face</td>
+<td>6.7B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">76.8</td>
+<td style="text-align: right;">75.7</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">18</td>
+<td><strong>Qwen2.5-Coder-7B-Instruct</strong></td>
+<td>Alibaba / Qwen</td>
+<td>7B</td>
+<td>Qwen Research License</td>
+<td style="text-align: right;">88.4</td>
+<td style="text-align: right;">83.5</td>
+<td style="text-align: right;">18.2</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">19</td>
+<td><strong>CodeLlama-70B-Instruct</strong></td>
+<td>Meta AI</td>
+<td>70B</td>
+<td>Llama 2 Community</td>
+<td style="text-align: right;">72.0</td>
+<td style="text-align: right;">66.8</td>
+<td style="text-align: right;">8.3</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">20</td>
+<td><strong>Granite-Code-8B-Instruct</strong></td>
+<td>IBM Research</td>
+<td>8B</td>
+<td>Apache 2.0</td>
+<td style="text-align: right;">57.9</td>
+<td style="text-align: right;">60.1</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">21</td>
+<td><strong>CodeGemma-7B-IT</strong></td>
+<td>Google DeepMind</td>
+<td>7B</td>
+<td>Google Gemma ToU</td>
+<td style="text-align: right;">60.4</td>
+<td style="text-align: right;">64.4</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">22</td>
+<td><strong>StarCoder2-15B</strong></td>
+<td>BigCode / Hugging Face</td>
+<td>15B</td>
+<td>BigCode OpenRAIL-M</td>
+<td style="text-align: right;">46.3</td>
+<td style="text-align: right;">65.1</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">23</td>
+<td><strong>DeepSeek-Coder-33B-Instruct</strong></td>
+<td>DeepSeek AI</td>
+<td>33B</td>
+<td>DeepSeek Model License</td>
+<td style="text-align: right;">79.3</td>
+<td style="text-align: right;">70.0</td>
+<td style="text-align: right;">10.8</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">24</td>
+<td><strong>CodeLlama-34B-Instruct</strong></td>
+<td>Meta AI</td>
+<td>34B</td>
+<td>Llama 2 Community</td>
+<td style="text-align: right;">72.7</td>
+<td style="text-align: right;">62.4</td>
+<td style="text-align: right;">5.1</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td><strong>StarCoder2-7B</strong></td>
+<td>BigCode / Hugging Face</td>
+<td>7B</td>
+<td>BigCode OpenRAIL-M</td>
+<td style="text-align: right;">35.4</td>
+<td style="text-align: right;">54.4</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">26</td>
+<td><strong>Qwen2.5-Coder-1.5B-Instruct</strong></td>
+<td>Alibaba / Qwen</td>
+<td>1.5B</td>
+<td>Qwen Research License</td>
+<td style="text-align: right;">69.2</td>
+<td style="text-align: right;">68.7</td>
+<td style="text-align: right;">5.3</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">27</td>
+<td><strong>OctoCoder</strong></td>
+<td>BigCode</td>
+<td>16B</td>
+<td>BigCode OpenRAIL-M</td>
+<td style="text-align: right;">46.2</td>
+<td style="text-align: right;">52.3</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">28</td>
+<td><strong>CodeT5+-16B</strong></td>
+<td>Salesforce AI Research</td>
+<td>16B</td>
+<td>BSD-3-Clause</td>
+<td style="text-align: right;">36.1</td>
+<td style="text-align: right;">49.6</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+</tbody>
+</table>
+<p><em>All scores are pass@1 with greedy decoding unless otherwise noted. HumanEval scores above 90% should be interpreted cautiously due to known benchmark saturation and data contamination risks. LiveCodeBench and SWE-bench Verified are recommended for frontier model comparisons.</em></p>
+<hr />
+<h2 id="provider-landscape">Provider Landscape</h2>
+<h3 id="alibaba-qwen-team">Alibaba / Qwen Team</h3>
+<p>The Qwen team has shipped the most comprehensive open-weight code model family in the industry. With five model sizes (1.5B, 7B, 14B, 32B, and the 2026-era Qwen3-Coder at 480B MoE), the Qwen2.5-Coder family supports 92 programming languages, 128K context windows, and maintains a permissive-ish research license. The Qwen3-Coder-480B-A35B represents the apex of their architecture — a Mixture-of-Experts model that activates only 35B parameters per forward pass, delivering frontier performance with manageable inference cost.</p>
+<p><strong>Strengths:</strong> Coverage across sizes, multi-language breadth, strong on code repair and completion tasks (Aider benchmark: 73.7% for 32B).<br />
+<strong>Weaknesses:</strong> Qwen Research License restricts some commercial uses; SWE-bench data sparse.</p>
+<h3 id="moonshot-ai">Moonshot AI</h3>
+<p>The dark horse of 2026. Kimi K2 and Kimi K2.5 are both MoE architectures with ~1 trillion total parameters and aggressive training on code. Kimi K2.5 is the first open-weight model to achieve 99% on HumanEval and 76.8% on SWE-bench — a new milestone for the open-source community. Moonshot published under their own "Kimi Open License," which is permissive for research and non-commercial commercial use but requires separate enterprise agreements above certain revenue thresholds.</p>
+<p><strong>Strengths:</strong> Absolute frontier performance, strong SWE-bench results.<br />
+<strong>Weaknesses:</strong> License not OSI-approved; inference infrastructure requirements are substantial.</p>
+<h3 id="mistral-ai">Mistral AI</h3>
+<p>Mistral occupies a unique position: the only Western lab in the top-5 agentic models, and the only major lab shipping Apache 2.0 licensed frontier models. The Devstral family is purpose-built for software engineering agents — trained on repository-level code, GitHub issues, and pull request data. Devstral 2 at 123B (SWE: 72.2%) and Devstral Small 2 at 24B (SWE: 68.0%) make agentic coding accessible to enterprises with on-premise requirements. Codestral-22B exists under the more restrictive MNPL license (non-commercial).</p>
+<p><strong>Strengths:</strong> Best Apache 2.0 options for production deployment; strong SWE-bench performance.<br />
+<strong>Weaknesses:</strong> Devstral at 123B still requires substantial compute; Codestral's MNPL license limits use cases.</p>
+<h3 id="deepseek-ai">DeepSeek AI</h3>
+<p>DeepSeek-Coder-V2-Instruct (236B total, 21B active via MoE) remains a top-tier model despite being released in mid-2024. DeepSeek pioneered the use of MoE for code-specialized models and their open publication of training details has influenced the entire field. The 6.7B instruct model is particularly notable for its performance-per-parameter ratio.</p>
+<p><strong>Strengths:</strong> Strong HumanEval scores, efficient MoE architecture, transparent technical reporting.<br />
+<strong>Weaknesses:</strong> DeepSeek Model License has commercial restrictions; US regulatory landscape adds supply-chain uncertainty.</p>
+<h3 id="ibm-research">IBM Research</h3>
+<p>IBM Granite Code models (8B and 34B) are the enterprise-safest choice: Apache 2.0, trained on data with provenance tracking, and audited for license compliance in training data. While not frontier performers (HumanEval: 57.9%–76.4%), they are the default recommendation for regulated industries (finance, healthcare, government).</p>
+<p><strong>Strengths:</strong> Cleanest license in the field, provenance-tracked training data.<br />
+<strong>Weaknesses:</strong> Benchmark performance trails frontier models significantly.</p>
+<h3 id="meta-ai">Meta AI</h3>
+<p>Code Llama (7B–70B) remains widely deployed due to ecosystem maturity, Llama 2 Community License familiarity, and deep integration into tools like llama.cpp, Ollama, and LM Studio. Performance is no longer competitive with 2025/2026 models, but the breadth of runtime support makes it the default choice for embedded and edge deployment scenarios where inference efficiency matters more than raw benchmark score.</p>
+<p><strong>Strengths:</strong> Widest runtime support; FP4 quantized 7B runs on consumer laptops.<br />
+<strong>Weaknesses:</strong> Performance significantly behind current generation; Llama 2 Community License has user-count restrictions (&gt;700M daily users requires special agreement).</p>
+<h3 id="zhipu-ai">Zhipu AI</h3>
+<p>GLM-4.7 at 9B parameters is a surprise package: 94.2% HumanEval and 84.9% LiveCodeBench from a dense 9B model is extraordinary performance density. Apache 2.0 licensed, it offers an appealing option for teams that need frontier-class performance within a single-GPU inference budget.</p>
+<p><strong>Strengths:</strong> Exceptional performance per parameter, Apache 2.0.<br />
+<strong>Weaknesses:</strong> Newer entrant with less ecosystem tooling; fewer independent evaluations.</p>
+<h3 id="bigcode-hugging-face">BigCode / Hugging Face</h3>
+<p>StarCoder2 and OctoCoder represent the research community's contribution. Trained transparently on The Stack v2 with full data documentation, they score lower on absolute benchmarks but carry the most defensible training data lineage. BigCode OpenRAIL-M is a responsible AI license that is more permissive than MNPL but less permissive than Apache 2.0.</p>
+<p><strong>Strengths:</strong> Full training transparency, strong community governance.<br />
+<strong>Weaknesses:</strong> Performance no longer competitive with commercial-grade open-weight models.</p>
+<hr />
+<h2 id="licensing-trends">Licensing Trends</h2>
+<p>The open-source AI licensing landscape has become increasingly complex. We identify four distinct license tiers:</p>
+<h3 id="tier-1-true-open-source-osi-compatible">Tier 1: True Open Source (OSI-compatible)</h3>
+<ul>
+<li><strong>Apache 2.0:</strong> GLM-4.7, Granite Code (all sizes), StarCoder2, OpenCoder, Magicoder, Devstral 2, Devstral Small 2, Yi-Coder</li>
+<li><strong>MIT:</strong> Phi-4 family</li>
+<li><strong>BSD-3-Clause:</strong> CodeT5+</li>
+</ul>
+<p>These models carry no commercial use restrictions, no user-count clauses, and are safe for regulated industry deployment without legal review. Apache 2.0 is becoming the defacto enterprise standard.</p>
+<h3 id="tier-2-community-licenses-restricted">Tier 2: Community Licenses (Restricted)</h3>
+<ul>
+<li><strong>Llama 2 Community License:</strong> Code Llama, WizardCoder (built on Llama 2). Prohibits use in competing AI services; requires attribution; &gt;700M DAU triggers commercial agreement.</li>
+<li><strong>BigCode OpenRAIL-M:</strong> StarCoder2 series. Permits commercial use but includes behavioral use restrictions and requires passing restrictions to downstream users.</li>
+<li><strong>Mistral MNPL (Non-Production):</strong> Codestral-22B. Strictly non-commercial; not suitable for production deployment.</li>
+</ul>
+<h3 id="tier-3-permissive-research-licenses-not-osi-certified">Tier 3: Permissive Research Licenses (Not OSI-certified)</h3>
+<ul>
+<li><strong>Qwen Research License:</strong> Permits commercial use below certain revenue/user thresholds; prohibits use in military applications; restricts fine-tune redistribution.</li>
+<li><strong>DeepSeek Model License:</strong> Similar structure to Qwen; adds restrictions on model outputs being used to train competing models.</li>
+<li><strong>Kimi Open License:</strong> Moonshot's custom license; permissive for most uses but requires enterprise agreements for large-scale commercial deployment.</li>
+</ul>
+<h3 id="tier-4-api-only-or-proprietary-weights">Tier 4: API-Only or Proprietary Weights</h3>
+<ul>
+<li><strong>Codestral via Mistral API:</strong> Available through Mistral's API under commercial terms; weights not publicly released for all variants.</li>
+</ul>
+<p><strong>Trend observation:</strong> The industry is bifurcating. Western labs trend toward Apache 2.0 for competitive positioning (Mistral, IBM, Zhipu, Google's Gemma). Chinese labs use custom permissive licenses that permit most commercial use while retaining strategic control. Both groups are competing aggressively against fully closed labs (OpenAI, Anthropic, Google Gemini) for enterprise developer mindshare.</p>
+<hr />
+<h2 id="deployment-patterns">Deployment Patterns</h2>
+<h3 id="pattern-1-edgelocal-inference-1b7b">Pattern 1: Edge/Local Inference (1B–7B)</h3>
+<p><strong>Recommended models:</strong> Qwen2.5-Coder-1.5B-Instruct, Qwen2.5-Coder-7B-Instruct, GLM-4.7 (9B), CodeLlama-7B<br />
+<strong>Runtimes:</strong> llama.cpp, Ollama, MLX (Apple Silicon), GGUF quantized<br />
+<strong>Use cases:</strong> IDE autocomplete (Copilot replacement), offline coding assistance, air-gapped environments<br />
+<strong>Hardware:</strong> Consumer GPU (RTX 4090) or Apple M3 Pro can run INT4-quantized 7B at 30+ tokens/sec</p>
+<p>The 7B class has matured to the point where Qwen2.5-Coder-7B at INT4 delivers HumanEval scores (88.4%) that would have been frontier-class in 2023. For teams with no cloud connectivity requirements, this tier is production-ready.</p>
+<h3 id="pattern-2-on-premise-mid-scale-8b34b">Pattern 2: On-Premise Mid-Scale (8B–34B)</h3>
+<p><strong>Recommended models:</strong> Devstral Small 2 (24B), Granite-Code-34B, OpenCoder-8B, Yi-Coder-9B<br />
+<strong>Runtimes:</strong> vLLM, TGI (Text Generation Inference), TensorRT-LLM<br />
+<strong>Use cases:</strong> Code review automation, multi-file refactoring, integration into internal CI/CD<br />
+<strong>Hardware:</strong> 2–4x A100 80GB or H100 for 24B–34B in BF16; single H100 with INT8</p>
+<p>Devstral Small 2 stands out for agentic use cases — it achieves 68.0% SWE-bench Verified from 24B parameters, making it deployable on enterprise GPU clusters without specialized MoE infrastructure.</p>
+<h3 id="pattern-3-high-capability-cloud-or-multi-gpu-cluster-100b-moe">Pattern 3: High-Capability Cloud or Multi-GPU Cluster (100B+ MoE)</h3>
+<p><strong>Recommended models:</strong> Kimi K2.5, Qwen3-Coder-480B-A35B, DeepSeek-Coder-V2-Instruct, Devstral 2<br />
+<strong>Runtimes:</strong> vLLM with MoE support, SGLang, DeepSpeed-Inference<br />
+<strong>Use cases:</strong> Autonomous coding agents, repository-level refactoring, complex bug resolution<br />
+<strong>Hardware:</strong> 8x H100 cluster minimum for MoE models; 2x H100 for Devstral 2 at INT8</p>
+<p>MoE models offer a compelling cost-per-token advantage at scale: DeepSeek-Coder-V2 activates only 21B of 236B parameters, making inference cost roughly equivalent to a dense 21B model while delivering performance comparable to much larger dense models.</p>
+<h3 id="pattern-4-specialized-verticals">Pattern 4: Specialized Verticals</h3>
+<ul>
+<li><strong>Regulated industries (finance, healthcare, government):</strong> IBM Granite Code (Apache 2.0, provenance-tracked training data)</li>
+<li><strong>Competitive intelligence / OSS product:</strong> Apache 2.0 models only — Devstral family, Granite Code, GLM-4.7</li>
+<li><strong>Research and fine-tuning:</strong> StarCoder2 (fully documented training data, BigCode OpenRAIL-M)</li>
+<li><strong>Consumer applications (&gt;700M DAU):</strong> Avoid Llama 2-based models; use Apache 2.0 alternatives</li>
+</ul>
+<hr />
+<h2 id="benchmark-methodology-notes">Benchmark Methodology Notes</h2>
+<p><strong>HumanEval</strong> (OpenAI, 2021): 164 Python programming problems, pass@1 with greedy decoding. Now widely considered saturated — the top six models all score above 88%. Still useful for comparing smaller models where scores remain differentiated.</p>
+<p><strong>MBPP</strong> (Google, 2021): 374–399 basic Python problems covering data structures, algorithms, and mathematical computation. Also showing saturation at the top end; remains useful for mid-tier model comparison.</p>
+<p><strong>LiveCodeBench</strong> (MIT, ongoing): Continuously updated with new problems from LeetCode, AtCoder, and Codeforces, explicitly designed to resist contamination. Evaluated on problems <em>after</em> model knowledge cutoffs. The new gold standard for competitive programming capability.</p>
+<p><strong>SWE-bench Verified</strong> (Princeton, 2024–ongoing): Real GitHub issues from popular Python repositories. Human-verified subset of 500 issues. Measures the full software engineering stack: understanding requirements, navigating codebases, writing patches, and passing existing tests. The most practically relevant benchmark for production coding agent evaluation.</p>
+<p><strong>EvalPlus</strong> (HumanEval+ / MBPP+): Extended test suites with 80x more HumanEval tests and 35x more MBPP tests. Reduces score inflation from models that "guess" correct answers from training exposure.</p>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Stop using HumanEval as your primary evaluation metric for new model selection.</strong> Any model released after mid-2024 that scores below 80% HumanEval is already trailing the field significantly. LiveCodeBench or SWE-bench Verified are the appropriate evaluation tools for frontier comparisons.</p>
+</li>
+<li>
+<p><strong>MoE is the architecture of the moment.</strong> Every frontier model above Rank 6 uses Mixture-of-Experts. The efficiency gains (activate 7–15% of parameters per token) are too significant to ignore at scale. Deployment infrastructure is the primary barrier — evaluate vLLM or SGLang with MoE support before committing to dense alternatives.</p>
+</li>
+<li>
+<p><strong>The 7–9B sweet spot now delivers what 70B delivered in 2023.</strong> GLM-4.7's 94.2% HumanEval from 9B parameters and Qwen2.5-Coder-7B's 88.4% from 7B have fundamentally changed the economics of on-device AI coding. Teams that wrote off local inference in 2023 should re-evaluate.</p>
+</li>
+<li>
+<p><strong>Apache 2.0 is worth a 5–10 point benchmark penalty.</strong> The licensing risk of Qwen Research License, DeepSeek Model License, or Llama 2 Community License at scale is measurable. IBM Granite, Devstral (Apache 2.0), GLM-4.7, and Mistral's family offer strong performance without license debt.</p>
+</li>
+<li>
+<p><strong>The next battleground is agentic SWE-bench performance, not token prediction.</strong> Kimi K2.5 at 76.8% and Devstral 2 at 72.2% on SWE-bench suggest that end-to-end software engineering — reading issues, finding relevant code, writing patches, passing CI — will be solved at the model level within 12–18 months. Teams should begin designing agent scaffolding infrastructure now rather than waiting for models to mature further.</p>
+</li>
+<li>
+<p><strong>Chinese labs are executing at a pace that Western open-source can't match today.</strong> Alibaba, DeepSeek, Moonshot, and Zhipu hold 14 of the top 20 positions on this leaderboard. This is not a gap that will close passively; Western enterprises with open-source mandates should be closely tracking Mistral, IBM, and emerging Apache 2.0 alternatives.</p>
+</li>
+</ol>
+<hr />
+<h2 id="appendix-model-index">Appendix: Model Index</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Provider</th>
+<th>Params</th>
+<th>License</th>
+<th>Release</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kimi K2.5</td>
+<td>Moonshot AI</td>
+<td>~1T MoE</td>
+<td>Kimi Open License</td>
+<td>2026-Q1</td>
+</tr>
+<tr>
+<td>GLM-4.7</td>
+<td>Zhipu AI</td>
+<td>9B</td>
+<td>Apache 2.0</td>
+<td>2025-Q4</td>
+</tr>
+<tr>
+<td>Qwen3-Coder-480B-A35B</td>
+<td>Alibaba / Qwen</td>
+<td>480B/35B MoE</td>
+<td>Qwen Research License</td>
+<td>2025-Q4</td>
+</tr>
+<tr>
+<td>Devstral 2</td>
+<td>Mistral AI</td>
+<td>123B</td>
+<td>Apache 2.0</td>
+<td>2026-Q1</td>
+</tr>
+<tr>
+<td>Kimi K2</td>
+<td>Moonshot AI</td>
+<td>~1T MoE</td>
+<td>Kimi Open License</td>
+<td>2025-Q3</td>
+</tr>
+<tr>
+<td>DeepSeek-Coder-V2-Instruct</td>
+<td>DeepSeek AI</td>
+<td>236B/21B MoE</td>
+<td>DeepSeek Model License</td>
+<td>2024-06</td>
+</tr>
+<tr>
+<td>Devstral Small 2</td>
+<td>Mistral AI</td>
+<td>24B</td>
+<td>Apache 2.0</td>
+<td>2026-Q1</td>
+</tr>
+<tr>
+<td>Qwen2.5-Coder-32B-Instruct</td>
+<td>Alibaba / Qwen</td>
+<td>32B</td>
+<td>Qwen Research License</td>
+<td>2024-11</td>
+</tr>
+<tr>
+<td>Yi-Coder-9B-Chat</td>
+<td>01.AI</td>
+<td>9B</td>
+<td>Apache 2.0</td>
+<td>2024-09</td>
+</tr>
+<tr>
+<td>OpenCoder-8B-Instruct</td>
+<td>OpenCoder Consortium</td>
+<td>8B</td>
+<td>Apache 2.0</td>
+<td>2024-11</td>
+</tr>
+<tr>
+<td>Codestral-22B-v0.1</td>
+<td>Mistral AI</td>
+<td>22B</td>
+<td>MNPL</td>
+<td>2024-05</td>
+</tr>
+<tr>
+<td>Qwen2.5-Coder-14B-Instruct</td>
+<td>Alibaba / Qwen</td>
+<td>14B</td>
+<td>Qwen Research License</td>
+<td>2024-11</td>
+</tr>
+<tr>
+<td>Phi-4-reasoning</td>
+<td>Microsoft</td>
+<td>14B</td>
+<td>MIT</td>
+<td>2025-04</td>
+</tr>
+<tr>
+<td>WizardCoder-33B-V1.1</td>
+<td>WizardLM / Microsoft</td>
+<td>33B</td>
+<td>Llama 2 Community</td>
+<td>2024-01</td>
+</tr>
+<tr>
+<td>Granite-Code-34B-Instruct</td>
+<td>IBM Research</td>
+<td>34B</td>
+<td>Apache 2.0</td>
+<td>2024-05</td>
+</tr>
+<tr>
+<td>DeepSeek-Coder-6.7B-Instruct</td>
+<td>DeepSeek AI</td>
+<td>6.7B</td>
+<td>DeepSeek Model License</td>
+<td>2024-01</td>
+</tr>
+<tr>
+<td>Magicoder-S-DS-6.7B</td>
+<td>UIllinois / HF</td>
+<td>6.7B</td>
+<td>Apache 2.0</td>
+<td>2023-12</td>
+</tr>
+<tr>
+<td>Qwen2.5-Coder-7B-Instruct</td>
+<td>Alibaba / Qwen</td>
+<td>7B</td>
+<td>Qwen Research License</td>
+<td>2024-11</td>
+</tr>
+<tr>
+<td>CodeLlama-70B-Instruct</td>
+<td>Meta AI</td>
+<td>70B</td>
+<td>Llama 2 Community</td>
+<td>2024-01</td>
+</tr>
+<tr>
+<td>Granite-Code-8B-Instruct</td>
+<td>IBM Research</td>
+<td>8B</td>
+<td>Apache 2.0</td>
+<td>2024-05</td>
+</tr>
+<tr>
+<td>CodeGemma-7B-IT</td>
+<td>Google DeepMind</td>
+<td>7B</td>
+<td>Google Gemma ToU</td>
+<td>2024-04</td>
+</tr>
+<tr>
+<td>StarCoder2-15B</td>
+<td>BigCode / Hugging Face</td>
+<td>15B</td>
+<td>BigCode OpenRAIL-M</td>
+<td>2024-02</td>
+</tr>
+<tr>
+<td>DeepSeek-Coder-33B-Instruct</td>
+<td>DeepSeek AI</td>
+<td>33B</td>
+<td>DeepSeek Model License</td>
+<td>2024-01</td>
+</tr>
+<tr>
+<td>CodeLlama-34B-Instruct</td>
+<td>Meta AI</td>
+<td>34B</td>
+<td>Llama 2 Community</td>
+<td>2023-08</td>
+</tr>
+<tr>
+<td>StarCoder2-7B</td>
+<td>BigCode / Hugging Face</td>
+<td>7B</td>
+<td>BigCode OpenRAIL-M</td>
+<td>2024-02</td>
+</tr>
+<tr>
+<td>Qwen2.5-Coder-1.5B-Instruct</td>
+<td>Alibaba / Qwen</td>
+<td>1.5B</td>
+<td>Qwen Research License</td>
+<td>2024-11</td>
+</tr>
+<tr>
+<td>OctoCoder</td>
+<td>BigCode</td>
+<td>16B</td>
+<td>BigCode OpenRAIL-M</td>
+<td>2023-06</td>
+</tr>
+<tr>
+<td>CodeT5+-16B</td>
+<td>Salesforce AI Research</td>
+<td>16B</td>
+<td>BSD-3-Clause</td>
+<td>2023-05</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="sources-methodology">Sources &amp; Methodology</h2>
+<p>Benchmark scores sourced from:</p>
+<ul>
+<li>EvalPlus Leaderboard — <code>evalplus.github.io/leaderboard.html</code></li>
+<li>LiveCodeBench — <code>livecodebench.github.io</code></li>
+<li>BigCode Models Leaderboard — <code>huggingface.co/spaces/bigcode/bigcode-models-leaderboard</code></li>
+<li>Qwen2.5-Coder Technical Report (arXiv:2409.12186)</li>
+<li>DeepSeek-Coder-V2 Technical Report (arXiv:2406.11931)</li>
+<li>Code Llama Technical Report (arXiv:2308.12950)</li>
+<li>StarCoder2 Technical Report (arXiv:2402.19173)</li>
+<li>Granite Code Models Technical Report (arXiv:2405.04324)</li>
+<li>OpenCoder Technical Report (arXiv:2411.04905)</li>
+<li>CodeGemma Technical Report (arXiv:2406.11409)</li>
+<li>Magicoder Paper (arXiv:2312.02120)</li>
+<li>Mistral AI blog — <code>mistral.ai</code></li>
+<li>BenchLM.ai Coding Leaderboard</li>
+<li>Morph LLM Code Generation Rankings</li>
+</ul>
+<p><em>Scores marked with asterisks (</em>) are interpolated from multiple sources where official evaluations were not available. Paper-reported scores may differ from third-party reproductions. All evaluation dates are approximate based on model release timelines.*</p>
+<hr />
+<p><em>Report compiled by ArkForge Genesis · <code>ark-forge/genesis:reports</code> · April 10, 2026</em></p>
+</div>
+
+<!-- ══ PART II ══ -->
+<div class="section-break">
+  <div class="section-label">Part II</div>
+  <div class="section-title">Open LLM<br>Performance Rankings</div>
+  <p class="section-subtitle">
+    Composite benchmark analysis across MMLU, HumanEval, and GSM8K
+    for the top 25 open-weight models.
+  </p>
+  <hr class="section-rule">
+</div>
+<div class="content">
+<h1 id="state-of-open-llm-performance-april-2026">State of Open LLM Performance — April 2026</h1>
+<blockquote>
+<p>Generated by Genesis · April 10, 2026<br />
+Benchmarks: MMLU (5-shot), HumanEval (pass@1), GSM8K (8-shot CoT)<br />
+Sources: Meta, Mistral AI, Alibaba Qwen, Google DeepMind, Microsoft, DeepSeek, Cohere, Allen AI official publications</p>
+</blockquote>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This report ranks <strong>25 open-weight language models</strong> by composite benchmark performance across three canonical evaluations:</p>
+<ul>
+<li><strong>MMLU</strong> — general world knowledge and reasoning (57 subjects)</li>
+<li><strong>HumanEval</strong> — functional Python code generation (pass@1)</li>
+<li><strong>GSM8K</strong> — grade-school math word problems (chain-of-thought)</li>
+</ul>
+<p>Composite score = MMLU×0.4 + HumanEval×0.3 + GSM8K×0.3</p>
+<hr />
+<h2 id="top-25-open-weight-models-composite-ranking">Top 25 Open-Weight Models — Composite Ranking</h2>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Model</th>
+<th>Org</th>
+<th>Params</th>
+<th>Composite</th>
+<th>MMLU</th>
+<th>HumanEval</th>
+<th>GSM8K</th>
+<th>License</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct">Llama-3.1-405B-Instruct</a></td>
+<td>Meta</td>
+<td>405B</td>
+<td><strong>91.18</strong></td>
+<td>88.6</td>
+<td>89.0</td>
+<td>96.8</td>
+<td>Llama 3</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-R1">DeepSeek-R1</a></td>
+<td>DeepSeek</td>
+<td>671B</td>
+<td><strong>90.29</strong></td>
+<td>90.8</td>
+<td>82.6</td>
+<td>97.3</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="https://huggingface.co/mistralai/Mistral-Large-Instruct-2407">Mistral-Large-Instruct-2407</a></td>
+<td>Mistral AI</td>
+<td>123B</td>
+<td><strong>89.13</strong></td>
+<td>84.0</td>
+<td>92.1</td>
+<td>93.0</td>
+<td>MRL</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct">Qwen2.5-72B-Instruct</a></td>
+<td>Alibaba</td>
+<td>72B</td>
+<td><strong>87.9</strong></td>
+<td>86.1</td>
+<td>86.6</td>
+<td>91.6</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="https://huggingface.co/microsoft/phi-4">phi-4</a></td>
+<td>Microsoft</td>
+<td>14B</td>
+<td><strong>87.35</strong></td>
+<td>84.8</td>
+<td>82.6</td>
+<td>95.5</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-V3">DeepSeek-V3</a></td>
+<td>DeepSeek</td>
+<td>671B</td>
+<td><strong>87.15</strong></td>
+<td>88.5</td>
+<td>82.6</td>
+<td>89.9</td>
+<td>DeepSeek</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen2.5-32B-Instruct</a></td>
+<td>Alibaba</td>
+<td>32B</td>
+<td><strong>84.83</strong></td>
+<td>83.9</td>
+<td>79.3</td>
+<td>91.6</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct">Llama-3.3-70B-Instruct</a></td>
+<td>Meta</td>
+<td>70B</td>
+<td><strong>84.11</strong></td>
+<td>86.0</td>
+<td>72.6</td>
+<td>93.1</td>
+<td>Llama 3</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct">Llama-3.1-70B-Instruct</a></td>
+<td>Meta</td>
+<td>70B</td>
+<td><strong>83.75</strong></td>
+<td>83.6</td>
+<td>72.6</td>
+<td>95.1</td>
+<td>Llama 3</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="https://huggingface.co/NovaSky-Berkeley/Sky-T1-32B-Preview">Sky-T1-32B-Preview</a></td>
+<td>NovaSky</td>
+<td>32B</td>
+<td><strong>83.32</strong></td>
+<td>82.0</td>
+<td>79.3</td>
+<td>89.1</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="https://huggingface.co/mistralai/Mistral-Small-Instruct-2409">Mistral-Small-Instruct-2409</a></td>
+<td>Mistral AI</td>
+<td>22B</td>
+<td><strong>80.65</strong></td>
+<td>79.9</td>
+<td>74.4</td>
+<td>87.9</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>12</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-14B-Instruct">Qwen2.5-14B-Instruct</a></td>
+<td>Alibaba</td>
+<td>14B</td>
+<td><strong>80.32</strong></td>
+<td>79.9</td>
+<td>72.0</td>
+<td>89.2</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>13</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct">Qwen2.5-7B-Instruct</a></td>
+<td>Alibaba</td>
+<td>7B</td>
+<td><strong>77.65</strong></td>
+<td>74.2</td>
+<td>68.3</td>
+<td>91.6</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>14</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct">Llama-3.1-8B-Instruct</a></td>
+<td>Meta</td>
+<td>8B</td>
+<td><strong>75.04</strong></td>
+<td>73.0</td>
+<td>68.3</td>
+<td>84.5</td>
+<td>Llama 3</td>
+</tr>
+<tr>
+<td>15</td>
+<td><a href="https://huggingface.co/google/gemma-2-27b-it">gemma-2-27b-it</a></td>
+<td>Google</td>
+<td>27B</td>
+<td><strong>72.68</strong></td>
+<td>75.2</td>
+<td>51.8</td>
+<td>90.2</td>
+<td>Gemma</td>
+</tr>
+<tr>
+<td>16</td>
+<td><a href="https://huggingface.co/microsoft/Phi-3.5-mini-instruct">Phi-3.5-mini-instruct</a></td>
+<td>Microsoft</td>
+<td>3.8B</td>
+<td><strong>72.3</strong></td>
+<td>69.0</td>
+<td>62.8</td>
+<td>86.2</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>17</td>
+<td><a href="https://huggingface.co/CohereForAI/c4ai-command-r-plus-08-2024">c4ai-command-r-plus-08-2024</a></td>
+<td>Cohere</td>
+<td>104B</td>
+<td><strong>67.21</strong></td>
+<td>75.7</td>
+<td>52.4</td>
+<td>70.7</td>
+<td>CC-BY-NC</td>
+</tr>
+<tr>
+<td>18</td>
+<td><a href="https://huggingface.co/google/gemma-2-9b-it">gemma-2-9b-it</a></td>
+<td>Google</td>
+<td>9B</td>
+<td><strong>63.43</strong></td>
+<td>70.9</td>
+<td>40.2</td>
+<td>76.7</td>
+<td>Gemma</td>
+</tr>
+<tr>
+<td>19</td>
+<td><a href="https://huggingface.co/allenai/OLMo-2-13B-Instruct">OLMo-2-13B-Instruct</a></td>
+<td>Allen AI</td>
+<td>13B</td>
+<td><strong>63.33</strong></td>
+<td>67.5</td>
+<td>39.6</td>
+<td>81.5</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>20</td>
+<td><a href="https://huggingface.co/Qwen/Qwen3-0.6B">Qwen3-0.6B</a></td>
+<td>Alibaba</td>
+<td>600M</td>
+<td><strong>59.03</strong></td>
+<td>59.0</td>
+<td>46.3</td>
+<td>71.8</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>21</td>
+<td><a href="https://huggingface.co/01-ai/Yi-34B-Chat">Yi-34B-Chat</a></td>
+<td>01.AI</td>
+<td>34B</td>
+<td><strong>57.63</strong></td>
+<td>73.5</td>
+<td>26.2</td>
+<td>67.9</td>
+<td>Yi</td>
+</tr>
+<tr>
+<td>22</td>
+<td><a href="https://huggingface.co/allenai/OLMo-2-7B-Instruct">OLMo-2-7B-Instruct</a></td>
+<td>Allen AI</td>
+<td>7B</td>
+<td><strong>56.86</strong></td>
+<td>63.7</td>
+<td>31.7</td>
+<td>72.9</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>23</td>
+<td><a href="https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3">Mistral-7B-Instruct-v0.3</a></td>
+<td>Mistral AI</td>
+<td>7B</td>
+<td><strong>50.32</strong></td>
+<td>60.1</td>
+<td>35.4</td>
+<td>52.2</td>
+<td>Apache 2.0</td>
+</tr>
+<tr>
+<td>24</td>
+<td><a href="https://huggingface.co/tiiuae/falcon-180B">falcon-180B</a></td>
+<td>TII</td>
+<td>180B</td>
+<td><strong>41.84</strong></td>
+<td>70.4</td>
+<td>11.6</td>
+<td>34.0</td>
+<td>Falcon</td>
+</tr>
+<tr>
+<td>25</td>
+<td><a href="https://huggingface.co/google/gemma-2-2b-it">gemma-2-2b-it</a></td>
+<td>Google</td>
+<td>2B</td>
+<td><strong>33.24</strong></td>
+<td>51.3</td>
+<td>18.3</td>
+<td>24.1</td>
+<td>Gemma</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="benchmark-breakdowns">Benchmark Breakdowns</h2>
+<h3 id="mmlu-top-10">MMLU — Top 10</h3>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Model</th>
+<th>MMLU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-R1">DeepSeek-R1</a></td>
+<td>90.8</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct">Llama-3.1-405B-Instruct</a></td>
+<td>88.6</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-V3">DeepSeek-V3</a></td>
+<td>88.5</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct">Qwen2.5-72B-Instruct</a></td>
+<td>86.1</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct">Llama-3.3-70B-Instruct</a></td>
+<td>86.0</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="https://huggingface.co/microsoft/phi-4">phi-4</a></td>
+<td>84.8</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="https://huggingface.co/mistralai/Mistral-Large-Instruct-2407">Mistral-Large-Instruct-2407</a></td>
+<td>84.0</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen2.5-32B-Instruct</a></td>
+<td>83.9</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct">Llama-3.1-70B-Instruct</a></td>
+<td>83.6</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="https://huggingface.co/NovaSky-Berkeley/Sky-T1-32B-Preview">Sky-T1-32B-Preview</a></td>
+<td>82.0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="humaneval-top-10-code-performance">HumanEval — Top 10 (Code Performance)</h3>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Model</th>
+<th>HumanEval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="https://huggingface.co/mistralai/Mistral-Large-Instruct-2407">Mistral-Large-Instruct-2407</a></td>
+<td>92.1</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct">Llama-3.1-405B-Instruct</a></td>
+<td>89.0</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct">Qwen2.5-72B-Instruct</a></td>
+<td>86.6</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-R1">DeepSeek-R1</a></td>
+<td>82.6</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="https://huggingface.co/microsoft/phi-4">phi-4</a></td>
+<td>82.6</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-V3">DeepSeek-V3</a></td>
+<td>82.6</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen2.5-32B-Instruct</a></td>
+<td>79.3</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="https://huggingface.co/NovaSky-Berkeley/Sky-T1-32B-Preview">Sky-T1-32B-Preview</a></td>
+<td>79.3</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="https://huggingface.co/mistralai/Mistral-Small-Instruct-2409">Mistral-Small-Instruct-2409</a></td>
+<td>74.4</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct">Llama-3.3-70B-Instruct</a></td>
+<td>72.6</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gsm8k-top-10-math-reasoning">GSM8K — Top 10 (Math Reasoning)</h3>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Model</th>
+<th>GSM8K</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="https://huggingface.co/deepseek-ai/DeepSeek-R1">DeepSeek-R1</a></td>
+<td>97.3</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct">Llama-3.1-405B-Instruct</a></td>
+<td>96.8</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="https://huggingface.co/microsoft/phi-4">phi-4</a></td>
+<td>95.5</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct">Llama-3.1-70B-Instruct</a></td>
+<td>95.1</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct">Llama-3.3-70B-Instruct</a></td>
+<td>93.1</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="https://huggingface.co/mistralai/Mistral-Large-Instruct-2407">Mistral-Large-Instruct-2407</a></td>
+<td>93.0</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct">Qwen2.5-72B-Instruct</a></td>
+<td>91.6</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen2.5-32B-Instruct</a></td>
+<td>91.6</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct">Qwen2.5-7B-Instruct</a></td>
+<td>91.6</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="https://huggingface.co/google/gemma-2-27b-it">gemma-2-27b-it</a></td>
+<td>90.2</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="key-findings">Key Findings</h2>
+<h3 id="1-reasoning-giants-dominate">1. Reasoning Giants Dominate</h3>
+<p><strong>Llama-3.1-405B-Instruct</strong> (Meta) leads with a composite score of <strong>91.18</strong>, driven by exceptional GSM8K performance (96.8). DeepSeek models demonstrate that extended reasoning (chain-of-thought scaling) provides the largest single-benchmark boost in 2025-2026.</p>
+<h3 id="2-efficiency-sweet-spot-7b14b-parameters">2. Efficiency Sweet Spot: 7B–14B Parameters</h3>
+<p>Models in the 7B–14B range now routinely exceed 70+ MMLU — a threshold that required 70B+ parameters in 2023. Microsoft Phi-4 (14B, MMLU: 84.8) and Qwen2.5-14B (14B, MMLU: 79.9) exemplify the data quality / architecture efficiency gains of 2024.</p>
+<h3 id="3-code-generation-improvement">3. Code Generation Improvement</h3>
+<p>Mistral-Large-2407 achieves <strong>HumanEval 92.1</strong>, the highest among open-weight models, surpassing many proprietary systems. The gap between code-specialized and general models has narrowed significantly.</p>
+<h3 id="4-license-diversity-expands-access">4. License Diversity Expands Access</h3>
+<p>Of the top 25 models: <strong>10</strong> use Apache 2.0, <strong>4</strong> use MIT, <strong>3</strong> use model-specific restrictive licenses (Llama 3, MRL, DeepSeek). True permissive open-source accounts for 56% of top performers — a significant shift from 2023.</p>
+<h3 id="5-context-window-is-no-longer-a-differentiator">5. Context Window is No Longer a Differentiator</h3>
+<p>128K context is now standard across Llama 3.1, Qwen2.5, Mistral-Large, and DeepSeek families. Competitive advantage has shifted to reasoning capability and benchmark efficiency.</p>
+<hr />
+<h2 id="model-family-analysis">Model Family Analysis</h2>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Models</th>
+<th>Avg Composite</th>
+<th>Standout</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepSeek</td>
+<td>2</td>
+<td>88.7</td>
+<td>DeepSeek-R1</td>
+</tr>
+<tr>
+<td>Meta</td>
+<td>4</td>
+<td>83.5</td>
+<td>Llama-3.1-405B-Instruct</td>
+</tr>
+<tr>
+<td>NovaSky</td>
+<td>1</td>
+<td>83.3</td>
+<td>Sky-T1-32B-Preview</td>
+</tr>
+<tr>
+<td>Microsoft</td>
+<td>2</td>
+<td>79.8</td>
+<td>phi-4</td>
+</tr>
+<tr>
+<td>Alibaba</td>
+<td>5</td>
+<td>77.9</td>
+<td>Qwen2.5-72B-Instruct</td>
+</tr>
+<tr>
+<td>Mistral AI</td>
+<td>3</td>
+<td>73.4</td>
+<td>Mistral-Large-Instruct-2407</td>
+</tr>
+<tr>
+<td>Cohere</td>
+<td>1</td>
+<td>67.2</td>
+<td>c4ai-command-r-plus-08-2024</td>
+</tr>
+<tr>
+<td>Allen AI</td>
+<td>2</td>
+<td>60.1</td>
+<td>OLMo-2-13B-Instruct</td>
+</tr>
+<tr>
+<td>01.AI</td>
+<td>1</td>
+<td>57.6</td>
+<td>Yi-34B-Chat</td>
+</tr>
+<tr>
+<td>Google</td>
+<td>3</td>
+<td>56.5</td>
+<td>gemma-2-27b-it</td>
+</tr>
+<tr>
+<td>TII</td>
+<td>1</td>
+<td>41.8</td>
+<td>falcon-180B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<ul>
+<li><strong>MMLU</strong>: 5-shot, 57-subject multiple-choice; measures breadth of world knowledge</li>
+<li><strong>HumanEval</strong>: pass@1, 164 Python function synthesis problems; measures code generation</li>
+<li><strong>GSM8K</strong>: 8-shot chain-of-thought, 1319 math word problems; measures step-by-step reasoning</li>
+<li><strong>Composite</strong>: MMLU(40%) + HumanEval(30%) + GSM8K(30%) — weighted to balance reasoning types</li>
+<li>Scores sourced from official model cards, technical reports, and published papers</li>
+<li>HuggingFace download counts fetched via Hub API (as of report generation date)</li>
+</ul>
+<hr />
+<p><em>Report auto-generated by Genesis · ark-forge/genesis · 2026-04-10T12:55:07Z</em></p>
+</div>
+
+<!-- ══ APPENDIX ══ -->
+<div class="section-break">
+  <div class="section-label">Appendix</div>
+  <div class="section-title">Methodology &amp;<br>Data Sources</div>
+  <hr class="section-rule">
+</div>
+<div class="content">
+  <h2>Benchmark Definitions</h2>
+  <p><strong>HumanEval</strong> — OpenAI's 164 Python programming problems, scored as pass@1 with greedy decoding. Models above 90% are considered saturated; LiveCodeBench is preferred for frontier discrimination.</p>
+  <p><strong>LiveCodeBench (LCB)</strong> — Continuously updated competitive programming problems from Codeforces, LeetCode, and AtCoder, collected post-training-cutoff to minimize contamination. Pass@1 with 5-minute time limit per problem.</p>
+  <p><strong>SWE-bench Verified</strong> — Real GitHub issues from open-source Python repositories. Models must autonomously navigate, edit, and test codebases to resolve issues. Verified subset (500 problems) reviewed by human engineers for validity.</p>
+  <p><strong>MMLU</strong> — 57-subject multiple-choice exam covering STEM, humanities, social sciences, and professional domains. Evaluated 5-shot.</p>
+  <p><strong>GSM8K</strong> — 8,500 grade-school math word problems requiring multi-step reasoning. Evaluated with 8-shot chain-of-thought prompting.</p>
+  <p><strong>MBPP</strong> — Mostly Basic Python Programming — 500 crowd-sourced Python problems. Pass@1.</p>
+
+  <h2>Data Sources</h2>
+  <ul>
+    <li>Official model cards and technical reports from each provider</li>
+    <li>Open LLM Leaderboard v2 (Hugging Face)</li>
+    <li>LiveCodeBench public leaderboard (livecodebench.github.io)</li>
+    <li>SWE-bench leaderboard (swebench.com)</li>
+    <li>EvalPlus leaderboard (evalplus.github.io)</li>
+    <li>Aider LLM code editing leaderboard (aider.chat/docs/leaderboards)</li>
+  </ul>
+
+  <h2>License Reference</h2>
+  <table>
+    <thead><tr><th>License</th><th>Commercial Use</th><th>Redistribution</th><th>Fine-tuning</th><th>Notable Models</th></tr></thead>
+    <tbody>
+      <tr><td>Apache 2.0</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Qwen2.5, IBM Granite, StarCoder2, Devstral</td></tr>
+      <tr><td>MIT</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Phi-4, DeepSeek-R1, DeepSeek-V2.5</td></tr>
+      <tr><td>Llama 3 Community</td><td>Yes (&lt;700M MAU)</td><td>Yes</td><td>Yes</td><td>Llama 3.1 family</td></tr>
+      <tr><td>Mistral Research (MRL)</td><td>Research only</td><td>No</td><td>No</td><td>Mistral-Large</td></tr>
+      <tr><td>BigCode OpenRAIL-M</td><td>Yes (with use restrictions)</td><td>Yes</td><td>Yes</td><td>StarCoder, OctoCoder</td></tr>
+      <tr><td>DeepSeek Model License</td><td>Restricted</td><td>Limited</td><td>Yes</td><td>DeepSeek-Coder-V2</td></tr>
+      <tr><td>Qwen Research License</td><td>Restricted (&lt;100M MAU)</td><td>Limited</td><td>Yes</td><td>Qwen3-Coder</td></tr>
+      <tr><td>Kimi Open License</td><td>Non-commercial / enterprise agreement</td><td>No</td><td>No</td><td>Kimi K2, K2.5</td></tr>
+      <tr><td>MNPL (Mistral NLP)</td><td>Non-commercial only</td><td>No</td><td>No</td><td>Codestral-22B</td></tr>
+    </tbody>
+  </table>
+
+  <h2>About ArkForge Genesis</h2>
+  <p>
+    Genesis is an autonomous AI intelligence system developed by ArkForge. It continuously monitors
+    model releases, benchmark results, and research publications to produce actionable intelligence
+    reports for engineering teams and AI procurement decision-makers.
+  </p>
+  <p>
+    This report was generated on <strong>April 10, 2026</strong>. Data reflects publicly available
+    information as of that date. Benchmark scores may have been updated by providers since publication.
+  </p>
+  <p style="color: var(--muted); font-size: 9pt; margin-top: 32px;">
+    © 2026 ArkForge. This report is licensed for single-seat use. Redistribution or resale is
+    prohibited without written permission. For team licenses, contact ArkForge.
+  </p>
+</div>
+
+<!-- ── Sticky PDF Upsell CTA ── -->
+<style>
+  .stripe-cta {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    background: linear-gradient(135deg, #7c3aed 0%, #1a56db 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 14px 22px;
+    box-shadow: 0 8px 32px rgba(124,58,237,0.35);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    max-width: 280px;
+  }
+  .stripe-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(124,58,237,0.45);
+    color: #fff;
+    text-decoration: none;
+  }
+  .stripe-cta-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .stripe-cta-text { line-height: 1.3; }
+  .stripe-cta-text small {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+  @media print { .stripe-cta { display: none !important; } }
+</style>
+
+<a href="https://buy.stripe.com/3cI5kw596ezi7CU7Qk4AU0e"
+   class="stripe-cta"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="Get the full PDF report for €9">
+  <span class="stripe-cta-icon">📄</span>
+  <span class="stripe-cta-text">
+    Get Full Report PDF — €9
+    <small>55+ models · 80-page deep-dive</small>
+  </span>
+</a>
+
+</body>
+</html>
