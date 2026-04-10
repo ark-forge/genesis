@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Benchmark Snapshot — Open-Source LLM Code Performance, April 2026</title>
+  <meta name="description" content="Live benchmark comparison of 44 open-source code LLMs: HumanEval, LiveCodeBench, SWE-bench scores. Updated April 2026.">
+  <meta property="og:title" content="AI Benchmark Snapshot — Open LLM Code Rankings">
+  <meta property="og:description" content="Compare 44 open-source code models across HumanEval, LiveCodeBench, SWE-bench. April 2026.">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #7c6aff;
+      --accent2: #00d4aa;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --s-color: #ffd700;
+      --a-color: #7c6aff;
+      --b-color: #00d4aa;
+      --c-color: #4a4a6a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .nav-brand { font-weight: 700; font-size: 1.1rem; color: var(--accent); letter-spacing: -0.02em; }
+    .nav-brand span { color: var(--text); }
+    .nav-date { font-size: 0.8rem; color: var(--muted); }
+    /* HERO */
+    .hero {
+      padding: 4rem 2rem 3rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(124,106,255,0.15);
+      color: var(--accent);
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(124,106,255,0.3);
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 680px;
+      margin-bottom: 2.5rem;
+    }
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .stat-num {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--accent2);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    /* NARRATIVE */
+    .narrative {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+      max-width: 900px;
+    }
+    .narrative h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent); }
+    .narrative p { color: #c0c0d8; line-height: 1.75; margin-bottom: 0.75rem; }
+    .narrative p:last-child { margin-bottom: 0; }
+    /* TABLE SECTION */
+    .table-section { max-width: 1200px; margin: 0 auto; padding: 0 2rem 2rem; }
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .table-header h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+    .legend { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .legend-dot {
+      width: 8px; height: 8px; border-radius: 2px;
+    }
+    .dot-s { background: var(--s-color); }
+    .dot-a { background: var(--a-color); }
+    .dot-b { background: var(--b-color); }
+    .dot-c { background: var(--c-color); }
+    /* TABLE */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      padding: 0.875rem 1rem;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      background: var(--surface2);
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(42,42,61,0.5);
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: rgba(124,106,255,0.05); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 0.875rem 1rem; vertical-align: middle; }
+    .rank { color: var(--muted); font-weight: 700; font-size: 0.8rem; white-space: nowrap; }
+    .model-name { min-width: 220px; }
+    .model-name strong { display: block; font-weight: 600; color: var(--text); }
+    .model-name .provider { font-size: 0.75rem; color: var(--muted); }
+    .params { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+    .score { font-weight: 700; color: var(--text); }
+    .na { color: var(--border); }
+    .tier-cell { text-align: center; }
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+    .tier-s .tier-badge, .tier-badge.tier-s { background: rgba(255,215,0,0.15); color: var(--s-color); border: 1px solid rgba(255,215,0,0.3); }
+    .tier-a .tier-badge, .tier-badge.tier-a { background: rgba(124,106,255,0.15); color: var(--accent); border: 1px solid rgba(124,106,255,0.3); }
+    .tier-b .tier-badge, .tier-badge.tier-b { background: rgba(0,212,170,0.15); color: var(--accent2); border: 1px solid rgba(0,212,170,0.3); }
+    .tier-c .tier-badge, .tier-badge.tier-c { background: rgba(74,74,106,0.15); color: var(--muted); border: 1px solid rgba(74,74,106,0.3); }
+    /* Row tier accent */
+    .tier-s td:first-child { border-left: 2px solid var(--s-color); }
+    .tier-a td:first-child { border-left: 2px solid var(--accent); }
+    .tier-b td:first-child { border-left: 2px solid var(--accent2); }
+    /* CTA */
+    .cta-section {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+    .cta-card {
+      background: linear-gradient(135deg, rgba(124,106,255,0.12), rgba(0,212,170,0.08));
+      border: 1px solid rgba(124,106,255,0.3);
+      border-radius: 16px;
+      padding: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .cta-text h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .cta-text p { color: var(--muted); font-size: 0.95rem; max-width: 500px; }
+    .cta-text ul { color: var(--muted); font-size: 0.9rem; margin-top: 0.75rem; padding-left: 1.25rem; }
+    .cta-text ul li { margin-bottom: 0.25rem; }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.875rem 2rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.2s;
+      box-shadow: 0 4px 24px rgba(124,106,255,0.35);
+    }
+    .cta-btn:hover { background: #6b5ce7; transform: translateY(-1px); box-shadow: 0 6px 32px rgba(124,106,255,0.5); }
+    .cta-price { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 0.4rem; text-align: center; }
+    /* FOOTER */
+    footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .footer-sources { max-width: 600px; }
+    @media (max-width: 768px) {
+      .hero { padding: 2rem 1rem 1.5rem; }
+      .table-section { padding: 0 1rem 2rem; }
+      .cta-section { padding: 0 1rem; }
+      footer { padding: 1.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">AI<span>Benchmark</span></div>
+  <div class="nav-date">Compiled 2026-04-10 · 44 models</div>
+</nav>
+
+<div class="hero">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="hero-tag">April 2026 Snapshot</div>
+    <h1>Open-Source LLM<br><em>Code Performance</em> Rankings</h1>
+    <p class="hero-sub">
+      Aggregated benchmark scores for 44 open-weight code models — HumanEval, LiveCodeBench, and SWE-bench Verified — compiled from original papers and third-party evaluations.
+    </p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">44</div>
+        <div class="stat-label">Models Tracked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">12</div>
+        <div class="stat-label">With LiveCodeBench</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">4</div>
+        <div class="stat-label">With SWE-bench Scores</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">85.0</div>
+        <div class="stat-label">Best LiveCodeBench</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">76.8</div>
+        <div class="stat-label">Best SWE-bench</div>
+      </div>
+    </div>
+
+    <div class="narrative">
+      <h2>Key Findings — April 2026</h2>
+      <p>
+        <strong>The frontier has bifurcated.</strong> A small cluster of MoE-architecture models — Kimi K2.5, Qwen3-Coder-480B, and Devstral 2 — now dominate real-world agent tasks (SWE-bench Verified), while dense models max out the saturated HumanEval benchmark. HumanEval scores above 90% no longer differentiate models meaningfully.
+      </p>
+      <p>
+        <strong>LiveCodeBench is the new standard.</strong> Only 12 of 44 models report LiveCodeBench scores, but it is now the primary discriminator for frontier models. The gap between Kimi K2.5 (85.0 LCB) and the next open-weight model reveals how quickly the ceiling is rising.
+      </p>
+      <p>
+        <strong>SWE-bench Verified separates agents from assistants.</strong> With only 4 models reporting scores, SWE-bench data is sparse but decisive: it measures whether a model can autonomously resolve real GitHub issues, not just complete synthetic problems. Scores above 65% represent a qualitative capability threshold.
+      </p>
+      <p>
+        <strong>Efficient models punch above their weight.</strong> GLM-4.7 at 9B parameters achieves 94.2 HumanEval and 84.9 LiveCodeBench — rivaling models 50× larger — demonstrating that parameter count is increasingly a poor proxy for coding capability.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="table-section">
+  <div class="table-header">
+    <h2>Full Leaderboard</h2>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot dot-s"></span> S-Tier (LCB≥70 or SWE≥70)</span>
+      <span class="legend-item"><span class="legend-dot dot-a"></span> A-Tier (LCB≥40 or SWE≥60)</span>
+      <span class="legend-item"><span class="legend-dot dot-b"></span> B-Tier (LCB≥20 or HE≥80)</span>
+      <span class="legend-item"><span class="legend-dot dot-c"></span> C-Tier</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Model</th>
+          <th>Params</th>
+          <th>LiveCodeBench ↑</th>
+          <th>SWE-bench ↑</th>
+          <th>HumanEval ↑</th>
+          <th>HumanEval+ ↑</th>
+          <th>MBPP ↑</th>
+          <th>Tier</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+    <tr class="tier-s">
+      <td class="rank">#1</td>
+      <td class="model-name">
+        <strong>Kimi K2.5</strong>
+        <span class="provider">Moonshot AI</span>
+      </td>
+      <td class="params">unknown</td>
+      <td><span class="score">85.0</span></td>
+      <td><span class="score">76.8</span></td>
+      <td><span class="score">99.0</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-s">S</span></td>
+    </tr>
+    <tr class="tier-s">
+      <td class="rank">#2</td>
+      <td class="model-name">
+        <strong>GLM-4.7 (9B)</strong>
+        <span class="provider">Zhipu AI / Tsinghua KEG</span>
+      </td>
+      <td class="params">9B</td>
+      <td><span class="score">84.9</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">94.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-s">S</span></td>
+    </tr>
+    <tr class="tier-s">
+      <td class="rank">#3</td>
+      <td class="model-name">
+        <strong>Qwen3-Coder-480B-A35B-Instruct</strong>
+        <span class="provider">Alibaba / Qwen Team</span>
+      </td>
+      <td class="params">480B</td>
+      <td><span class="score">70.7</span></td>
+      <td><span class="score">69.6</span></td>
+      <td><span class="score">89.3</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">78.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-s">S</span></td>
+    </tr>
+    <tr class="tier-a">
+      <td class="rank">#4</td>
+      <td class="model-name">
+        <strong>Kimi K2</strong>
+        <span class="provider">Moonshot AI</span>
+      </td>
+      <td class="params">1T+</td>
+      <td><span class="score">53.7</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-a">A</span></td>
+    </tr>
+    <tr class="tier-a">
+      <td class="rank">#5</td>
+      <td class="model-name">
+        <strong>DeepSeek-Coder-V2-Instruct</strong>
+        <span class="provider">DeepSeek AI</span>
+      </td>
+      <td class="params">236B</td>
+      <td><span class="score">43.4</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">90.2</span></td>
+      <td><span class="score">84.8</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-a">A</span></td>
+    </tr>
+    <tr class="tier-a">
+      <td class="rank">#6</td>
+      <td class="model-name">
+        <strong>CodeQwen1.5-7B-Chat</strong>
+        <span class="provider">Alibaba / Qwen Team</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="score">43.3</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">83.5</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">78.7</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-a">A</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#7</td>
+      <td class="model-name">
+        <strong>Qwen2.5-Coder-32B-Instruct</strong>
+        <span class="provider">Alibaba / Qwen Team</span>
+      </td>
+      <td class="params">32B</td>
+      <td><span class="score">37.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">92.7</span></td>
+      <td><span class="score">87.0</span></td>
+      <td><span class="score">90.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#8</td>
+      <td class="model-name">
+        <strong>DeepSeek-Coder-V2-Lite-Instruct</strong>
+        <span class="provider">DeepSeek AI</span>
+      </td>
+      <td class="params">16B</td>
+      <td><span class="score">24.3</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">81.1</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#9</td>
+      <td class="model-name">
+        <strong>Qwen2.5-Coder-14B-Instruct</strong>
+        <span class="provider">Alibaba / Qwen Team</span>
+      </td>
+      <td class="params">14B</td>
+      <td><span class="score">23.4</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">89.6</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">86.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#10</td>
+      <td class="model-name">
+        <strong>Yi-Coder-9B-Chat</strong>
+        <span class="provider">01.AI</span>
+      </td>
+      <td class="params">9B</td>
+      <td><span class="score">23.4</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">85.4</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">73.8</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#11</td>
+      <td class="model-name">
+        <strong>Qwen2.5-Coder-7B-Instruct</strong>
+        <span class="provider">Alibaba / Qwen Team</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="score">18.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">88.4</span></td>
+      <td><span class="score">84.1</span></td>
+      <td><span class="score">83.5</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#12</td>
+      <td class="model-name">
+        <strong>Qwen2.5-Coder-1.5B-Instruct</strong>
+        <span class="provider">Alibaba / Qwen Team</span>
+      </td>
+      <td class="params">1.5B</td>
+      <td><span class="score">6.1</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">70.7</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">69.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-s">
+      <td class="rank">#13</td>
+      <td class="model-name">
+        <strong>Devstral 2 (Devstral-2-123B)</strong>
+        <span class="provider">Mistral AI</span>
+      </td>
+      <td class="params">123B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">72.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-s">S</span></td>
+    </tr>
+    <tr class="tier-a">
+      <td class="rank">#14</td>
+      <td class="model-name">
+        <strong>Devstral Small 2 (24B)</strong>
+        <span class="provider">Mistral AI</span>
+      </td>
+      <td class="params">24B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">68.0</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-a">A</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#15</td>
+      <td class="model-name">
+        <strong>Codestral 25.01</strong>
+        <span class="provider">Mistral AI</span>
+      </td>
+      <td class="params">22B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">86.6</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">91.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#16</td>
+      <td class="model-name">
+        <strong>OpenCoder-8B-Instruct</strong>
+        <span class="provider">INFLY Tech / OpenCoder Team</span>
+      </td>
+      <td class="params">8B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">83.5</span></td>
+      <td><span class="score">78.7</span></td>
+      <td><span class="score">79.1</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-b">
+      <td class="rank">#17</td>
+      <td class="model-name">
+        <strong>Phi-4</strong>
+        <span class="provider">Microsoft</span>
+      </td>
+      <td class="params">14B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">82.6</span></td>
+      <td><span class="score">82.8</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-b">B</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#18</td>
+      <td class="model-name">
+        <strong>WizardCoder-33B-V1.1</strong>
+        <span class="provider">WizardLM Team / Microsoft</span>
+      </td>
+      <td class="params">33B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">79.9</span></td>
+      <td><span class="score">73.2</span></td>
+      <td><span class="score">78.9</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#19</td>
+      <td class="model-name">
+        <strong>DeepSeek-Coder-33B-Instruct</strong>
+        <span class="provider">DeepSeek AI</span>
+      </td>
+      <td class="params">33B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">79.3</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">70.8</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#20</td>
+      <td class="model-name">
+        <strong>DeepSeek-Coder-6.7B-Instruct</strong>
+        <span class="provider">DeepSeek AI</span>
+      </td>
+      <td class="params">6.7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">78.6</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">74.9</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#21</td>
+      <td class="model-name">
+        <strong>Magicoder-S-DS-6.7B</strong>
+        <span class="provider">University of Illinois (UIUC ISE)</span>
+      </td>
+      <td class="params">6.7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">76.8</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#22</td>
+      <td class="model-name">
+        <strong>Codestral Mamba 7B</strong>
+        <span class="provider">Mistral AI</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">75.0</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">68.5</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#23</td>
+      <td class="model-name">
+        <strong>Phind-CodeLlama-34B-v2</strong>
+        <span class="provider">Phind</span>
+      </td>
+      <td class="params">34B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">73.8</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#24</td>
+      <td class="model-name">
+        <strong>WizardCoder-Python-34B-V1.0</strong>
+        <span class="provider">WizardLM Team / Microsoft</span>
+      </td>
+      <td class="params">34B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">73.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#25</td>
+      <td class="model-name">
+        <strong>OpenCoder-1.5B-Instruct</strong>
+        <span class="provider">INFLY Tech / OpenCoder Team</span>
+      </td>
+      <td class="params">1.5B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">72.5</span></td>
+      <td><span class="score">67.7</span></td>
+      <td><span class="score">72.7</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#26</td>
+      <td class="model-name">
+        <strong>Code Llama 70B Instruct</strong>
+        <span class="provider">Meta AI</span>
+      </td>
+      <td class="params">70B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">67.8</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">62.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#27</td>
+      <td class="model-name">
+        <strong>Granite-34B-Code-Instruct-8K</strong>
+        <span class="provider">IBM Research</span>
+      </td>
+      <td class="params">34B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">62.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">47.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#28</td>
+      <td class="model-name">
+        <strong>Qwen2.5-Coder-7B-Base</strong>
+        <span class="provider">Alibaba / Qwen Team</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">61.6</span></td>
+      <td><span class="score">53.0</span></td>
+      <td><span class="score">76.9</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#29</td>
+      <td class="model-name">
+        <strong>CodeGemma 7B-IT 1.1</strong>
+        <span class="provider">Google DeepMind</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">60.4</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">55.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#30</td>
+      <td class="model-name">
+        <strong>CodeGemma 7B-IT (Instruction Tuned)</strong>
+        <span class="provider">Google DeepMind</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">56.1</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">54.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#31</td>
+      <td class="model-name">
+        <strong>Code Llama - Python 34B</strong>
+        <span class="provider">Meta AI</span>
+      </td>
+      <td class="params">34B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">53.7</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">56.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#32</td>
+      <td class="model-name">
+        <strong>StarCoder2-15B</strong>
+        <span class="provider">BigCode (ServiceNow, Hugging Face, NVIDIA)</span>
+      </td>
+      <td class="params">15B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">46.3</span></td>
+      <td><span class="score">37.8</span></td>
+      <td><span class="score">66.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#33</td>
+      <td class="model-name">
+        <strong>OctoCoder (15.5B)</strong>
+        <span class="provider">BigCode (Hugging Face, ServiceNow)</span>
+      </td>
+      <td class="params">15.5B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">46.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#34</td>
+      <td class="model-name">
+        <strong>InstructCodeT5+ 16B</strong>
+        <span class="provider">Salesforce Research</span>
+      </td>
+      <td class="params">16B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">36.1</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#35</td>
+      <td class="model-name">
+        <strong>StarCoder2-7B</strong>
+        <span class="provider">BigCode (ServiceNow, Hugging Face, NVIDIA)</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">35.4</span></td>
+      <td><span class="score">29.9</span></td>
+      <td><span class="score">54.4</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#36</td>
+      <td class="model-name">
+        <strong>Code Llama 7B Instruct</strong>
+        <span class="provider">Meta AI</span>
+      </td>
+      <td class="params">7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">34.8</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">44.4</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#37</td>
+      <td class="model-name">
+        <strong>StarCoder (15.5B)</strong>
+        <span class="provider">BigCode (Hugging Face, ServiceNow)</span>
+      </td>
+      <td class="params">15.5B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">33.6</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">52.7</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#38</td>
+      <td class="model-name">
+        <strong>StarCoder2-3B</strong>
+        <span class="provider">BigCode (ServiceNow, Hugging Face, NVIDIA)</span>
+      </td>
+      <td class="params">3B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">31.7</span></td>
+      <td><span class="score">27.4</span></td>
+      <td><span class="score">60.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#39</td>
+      <td class="model-name">
+        <strong>CodeGen-Mono 16B</strong>
+        <span class="provider">Salesforce Research</span>
+      </td>
+      <td class="params">16.1B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">29.3</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#40</td>
+      <td class="model-name">
+        <strong>SantaCoder (1.1B)</strong>
+        <span class="provider">BigCode (Hugging Face)</span>
+      </td>
+      <td class="params">1.1B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">18.0</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#41</td>
+      <td class="model-name">
+        <strong>InCoder-6.7B</strong>
+        <span class="provider">Facebook AI Research / UC Berkeley</span>
+      </td>
+      <td class="params">6.7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">15.2</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#42</td>
+      <td class="model-name">
+        <strong>PolyCoder-2.7B</strong>
+        <span class="provider">Carnegie Mellon University</span>
+      </td>
+      <td class="params">2.7B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">5.6</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#43</td>
+      <td class="model-name">
+        <strong>Granite-8B-Code-Instruct-4K</strong>
+        <span class="provider">IBM Research</span>
+      </td>
+      <td class="params">8B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">42.2</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+    <tr class="tier-c">
+      <td class="rank">#44</td>
+      <td class="model-name">
+        <strong>Granite-3B-Code-Base</strong>
+        <span class="provider">IBM Research</span>
+      </td>
+      <td class="params">3B</td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="na">—</span></td>
+      <td><span class="score">36.0</span></td>
+      <td class="tier-cell"><span class="tier-badge tier-c">C</span></td>
+    </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="cta-section">
+  <div class="cta-card">
+    <div class="cta-text">
+      <h3>Full Dataset Export</h3>
+      <p>Download the complete structured dataset powering this leaderboard:</p>
+      <ul>
+        <li>All 44 models · 7 benchmark dimensions · raw scores + metadata</li>
+        <li>JSON + CSV formats · source references for every data point</li>
+        <li>Architecture details, license, context window, release dates</li>
+        <li>One-time purchase — no subscription</li>
+      </ul>
+    </div>
+    <div>
+      <a href="https://buy.stripe.com/9B628n1Yl1UM0PC5kk" class="cta-btn">
+        ⬇ Download Dataset — €5
+      </a>
+      <div class="cta-price">One-time · Instant delivery</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-sources">
+    <strong>Sources:</strong> EvalPlus Leaderboard · LiveCodeBench · BigCode Models Leaderboard · Original model technical reports (Qwen2.5-Coder, DeepSeek-Coder-V2, StarCoder2, Granite Code, CodeGemma). Compiled 2026-04-10.
+  </div>
+  <div>Built by <a href="https://github.com/ark-forge" style="color:var(--accent);text-decoration:none">ArkForge</a></div>
+</footer>
+
+</body>
+</html>
