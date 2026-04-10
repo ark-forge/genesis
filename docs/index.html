@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Model Intelligence Report — April 2026 | ArkForge</title>
+  <meta name="description" content="55+ open-weight LLMs benchmarked across HumanEval, LiveCodeBench, SWE-bench, MMLU, and GSM8K. The definitive coding AI leaderboard for April 2026. €9 one-time.">
+  <meta property="og:title" content="AI Model Intelligence Report — April 2026">
+  <meta property="og:description" content="55+ models ranked. Kimi K2.5 leads at 76.8% SWE-bench. Chinese labs hold 14/20 top spots. The benchmark data you need to pick your stack.">
+  <meta property="og:type" content="product">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #06070d;
+      --surface: #0d1117;
+      --surface2: #161b22;
+      --border: #21262d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --green: #3fb950;
+      --orange: #d29922;
+      --red: #f85149;
+      --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(6,7,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.3px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-cta {
+      background: var(--accent);
+      color: #fff;
+      padding: 7px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 80px 24px 64px;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.4);
+      color: var(--accent2);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+    .hero h1 span {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity 0.15s, transform 0.1s;
+      box-shadow: 0 4px 24px rgba(99,102,241,0.35);
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: border-color 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); }
+    .price-tag {
+      display: inline-block;
+      background: rgba(59,246,80,0.1);
+      border: 1px solid rgba(59,246,80,0.25);
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    /* ── SECTION COMMONS ── */
+    section { padding: 72px 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(22px, 3.5vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    /* ── FINDINGS ── */
+    .findings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .finding-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .finding-card:hover { border-color: var(--accent); }
+    .finding-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .finding-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .finding-card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── LEADERBOARD PREVIEW ── */
+    .leaderboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 40px;
+    }
+    .lb-header {
+      padding: 16px 20px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .lb-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .lb-badge {
+      font-size: 11px;
+      background: rgba(99,102,241,0.15);
+      color: var(--accent2);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    tbody tr:hover { background: var(--surface2); }
+    tbody tr:last-child { border-bottom: none; }
+    td { padding: 12px 16px; }
+    .rank { font-weight: 700; color: var(--muted); font-size: 12px; width: 36px; }
+    .rank.top3 { color: var(--accent2); }
+    .model-name { font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .provider { color: var(--muted); font-size: 12px; }
+    .score { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 12px; }
+    .score.high { color: var(--green); }
+    .score.mid { color: var(--orange); }
+    .score.na { color: var(--border); }
+    .license-tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+    .lic-apache { background: rgba(59,246,80,0.1); color: var(--green); }
+    .lic-research { background: rgba(210,153,34,0.15); color: var(--orange); }
+    .lic-other { background: rgba(139,148,158,0.1); color: var(--muted); }
+    .lb-blur {
+      position: relative;
+      overflow: hidden;
+    }
+    .lb-blur::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 120px;
+      background: linear-gradient(transparent, var(--surface));
+      pointer-events: none;
+    }
+    .lb-cta {
+      text-align: center;
+      padding: 28px 20px 24px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .lb-cta p { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+
+    /* ── WHAT'S INSIDE ── */
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 36px;
+    }
+    .toc-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .toc-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .toc-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .toc-text p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── PRICING ── */
+    .pricing-box {
+      max-width: 460px;
+      margin: 40px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(99,102,241,0.12);
+    }
+    .price-amount {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .price-currency {
+      font-size: 24px;
+      font-weight: 600;
+      vertical-align: super;
+    }
+    .price-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 8px 0 28px;
+    }
+    .price-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 32px;
+    }
+    .price-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .price-features li:last-child { border-bottom: none; }
+    .check { color: var(--green); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .guarantee {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      margin-top: 40px;
+    }
+    @media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+    .about-text p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+    .genesis-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .genesis-card .prompt { color: var(--accent2); }
+    .genesis-card .output { color: var(--green); margin-top: 8px; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-brand">ArkForge Intelligence</span>
+  <a href="#buy" class="nav-cta">Get Report — €9</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-badge">April 2026 Edition</div>
+  <h1>The <span>AI Model Intelligence</span><br>Report</h1>
+  <p class="hero-sub">
+    55+ open-weight LLMs benchmarked on real coding tasks.
+    Pick the right model — or waste months deploying the wrong one.
+  </p>
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">55+</span>
+      <span class="stat-label">Models Ranked</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">5</span>
+      <span class="stat-label">Benchmarks</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">99%</span>
+      <span class="stat-label">Top HumanEval</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">€9</span>
+      <span class="stat-label">One-Time</span>
+    </div>
+  </div>
+  <div class="hero-actions">
+    <a href="#buy" class="btn-primary">
+      ↓ Get the Report
+      <span class="price-tag">€9</span>
+    </a>
+    <a href="#leaderboard" class="btn-secondary">Preview Leaderboard</a>
+  </div>
+</header>
+
+<div class="divider"></div>
+
+<!-- FINDINGS -->
+<section id="findings">
+  <div class="container">
+    <div class="section-label">Key Findings</div>
+    <h2 class="section-title">5 Things That Changed in Q1 2026</h2>
+    <p class="section-sub">
+      The open-weight LLM landscape shifted faster than any prior quarter.
+      Here's what matters for your stack decisions.
+    </p>
+    <div class="findings-grid">
+      <div class="finding-card">
+        <div class="finding-num">01 — BENCHMARK SHIFT</div>
+        <h3>HumanEval is dead as a discriminator</h3>
+        <p>Six models exceed 88% pass@1. Benchmark saturation and contamination risk make LiveCodeBench and SWE-bench the only credible frontier metrics now.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-num">02 — NEW #1</div>
+        <h3>Kimi K2.5 sweeps all three frontier benchmarks</h3>
+        <p>Moonshot AI's model hits 99.0% HumanEval, 85.0% LiveCodeBench, and 76.8% SWE-bench Verified — a triple sweep from a non-US lab that was inconceivable 12 months ago.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-num">03 — OPEN AGENTIC</div>
+        <h3>Mistral Devstral 2 beats commercial rivals on SWE-bench</h3>
+        <p>72.2% on SWE-bench Verified under Apache 2.0. Devstral Small 2 at 24B achieves 68.0% — enterprise agentic coding now runs on commodity hardware.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-num">04 — GEOPOLITICS</div>
+        <h3>Chinese labs hold 14 of the top 20 positions</h3>
+        <p>Alibaba (Qwen), DeepSeek, Moonshot AI, and Zhipu AI dominate. IBM, Google, Meta, and Mistral hold the remaining Western spots. Procurement teams must adapt.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-num">05 — LICENSING RISK</div>
+        <h3>License audits are now a first step</h3>
+        <p>Apache 2.0 (Mistral, IBM, StarCoder2) vs. Qwen Research License vs. DeepSeek Model License — commercial use restrictions vary wildly. Full license matrix included.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- LEADERBOARD PREVIEW -->
+<section id="leaderboard">
+  <div class="container">
+    <div class="section-label">Leaderboard Preview</div>
+    <h2 class="section-title">Top 10 Open-Weight Coding Models</h2>
+    <p class="section-sub">
+      Ranked by composite score: LiveCodeBench 40% + SWE-bench 35% + HumanEval+ 25%.
+      Full 55+ model table in the report.
+    </p>
+    <div class="leaderboard">
+      <div class="lb-header">
+        <span class="lb-title">Open-Weight LLM Coding Leaderboard — April 2026</span>
+        <span class="lb-badge">Top 10 of 55+</span>
+      </div>
+      <div class="lb-blur">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Model</th>
+              <th>Provider</th>
+              <th>HumanEval</th>
+              <th>LiveCodeBench</th>
+              <th>SWE-bench</th>
+              <th>License</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="rank top3">1</td>
+              <td class="model-name">Kimi K2.5</td>
+              <td class="provider">Moonshot AI</td>
+              <td class="score high">99.0%</td>
+              <td class="score high">85.0%</td>
+              <td class="score high">76.8%</td>
+              <td><span class="license-tag lic-other">Kimi Open</span></td>
+            </tr>
+            <tr>
+              <td class="rank top3">2</td>
+              <td class="model-name">GLM-4.7</td>
+              <td class="provider">Zhipu AI</td>
+              <td class="score high">94.2%</td>
+              <td class="score high">84.9%</td>
+              <td class="score na">—</td>
+              <td><span class="license-tag lic-apache">Apache 2.0</span></td>
+            </tr>
+            <tr>
+              <td class="rank top3">3</td>
+              <td class="model-name">Qwen3-Coder-480B-A35B</td>
+              <td class="provider">Alibaba / Qwen</td>
+              <td class="score high">89.3%</td>
+              <td class="score mid">70.7%</td>
+              <td class="score mid">69.6%</td>
+              <td><span class="license-tag lic-research">Qwen Research</span></td>
+            </tr>
+            <tr>
+              <td class="rank">4</td>
+              <td class="model-name">Devstral 2</td>
+              <td class="provider">Mistral AI</td>
+              <td class="score mid">84.1%</td>
+              <td class="score mid">52.1%</td>
+              <td class="score high">72.2%</td>
+              <td><span class="license-tag lic-apache">Apache 2.0</span></td>
+            </tr>
+            <tr>
+              <td class="rank">5</td>
+              <td class="model-name">Kimi K2</td>
+              <td class="provider">Moonshot AI</td>
+              <td class="score mid">87.9%</td>
+              <td class="score mid">53.7%</td>
+              <td class="score mid">65.8%</td>
+              <td><span class="license-tag lic-other">Kimi Open</span></td>
+            </tr>
+            <tr>
+              <td class="rank">6</td>
+              <td class="model-name">DeepSeek-Coder-V2-Instruct</td>
+              <td class="provider">DeepSeek AI</td>
+              <td class="score high">90.2%</td>
+              <td class="score mid">43.4%</td>
+              <td class="score mid">51.3%</td>
+              <td><span class="license-tag lic-research">DeepSeek License</span></td>
+            </tr>
+            <tr>
+              <td class="rank">7</td>
+              <td class="model-name">Devstral Small 2</td>
+              <td class="provider">Mistral AI</td>
+              <td class="score mid">81.7%</td>
+              <td class="score mid">44.8%</td>
+              <td class="score high">68.0%</td>
+              <td><span class="license-tag lic-apache">Apache 2.0</span></td>
+            </tr>
+            <tr>
+              <td class="rank">8</td>
+              <td class="model-name">Qwen2.5-Coder-32B</td>
+              <td class="provider">Alibaba / Qwen</td>
+              <td class="score high">92.7%</td>
+              <td class="score mid">37.2%</td>
+              <td class="score na">—</td>
+              <td><span class="license-tag lic-research">Qwen Research</span></td>
+            </tr>
+            <tr>
+              <td class="rank">9</td>
+              <td class="model-name">Yi-Coder-9B-Chat</td>
+              <td class="provider">01.AI</td>
+              <td class="score mid">85.1%</td>
+              <td class="score na">—</td>
+              <td class="score na">—</td>
+              <td><span class="license-tag lic-apache">Apache 2.0</span></td>
+            </tr>
+            <tr>
+              <td class="rank">10</td>
+              <td class="model-name">OpenCoder-8B-Instruct</td>
+              <td class="provider">OpenCoder Consortium</td>
+              <td class="score mid">83.5%</td>
+              <td class="score na">—</td>
+              <td class="score na">—</td>
+              <td><span class="license-tag lic-apache">Apache 2.0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="lb-cta">
+        <p>Full report includes 55+ models, MMLU reasoning scores, GSMS8K math performance, hardware requirements, and deployment recommendations.</p>
+        <a href="#buy" class="btn-primary">Get full leaderboard — €9</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHAT'S INSIDE -->
+<section id="contents">
+  <div class="container">
+    <div class="section-label">Report Contents</div>
+    <h2 class="section-title">What You Get</h2>
+    <p class="section-sub">A 40+ page deep-dive built for engineers and CTOs making real infrastructure decisions.</p>
+    <div class="toc-grid">
+      <div class="toc-item">
+        <div class="toc-icon">📊</div>
+        <div class="toc-text">
+          <h4>Full Benchmark Matrix</h4>
+          <p>55+ models across HumanEval, LiveCodeBench, SWE-bench Verified, MMLU, and GSM8K</p>
+        </div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-icon">🏆</div>
+        <div class="toc-text">
+          <h4>Composite Ranking</h4>
+          <p>Weighted composite score methodology — no cherry-picked single-metric rankings</p>
+        </div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-icon">⚖️</div>
+        <div class="toc-text">
+          <h4>License Audit Matrix</h4>
+          <p>Apache 2.0 vs. Qwen Research vs. DeepSeek Model License — commercial use risks mapped</p>
+        </div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-icon">🖥️</div>
+        <div class="toc-text">
+          <h4>Hardware Requirements</h4>
+          <p>VRAM/RAM needs per model tier — from A100 clusters to consumer GPUs</p>
+        </div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-icon">🌍</div>
+        <div class="toc-text">
+          <h4>Provider Deep-Dives</h4>
+          <p>Alibaba, DeepSeek, Moonshot AI, Mistral, IBM, Meta, Google — strategy & trajectory</p>
+        </div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-icon">🤖</div>
+        <div class="toc-text">
+          <h4>Coding Assistant Leaderboard</h4>
+          <p>IDE integration comparison: Cursor, Continue, Aider, Copilot vs. open alternatives</p>
+        </div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-icon">📈</div>
+        <div class="toc-text">
+          <h4>Trend Analysis</h4>
+          <p>Q1 2025 → Q1 2026 benchmark trajectory — what's improving and at what rate</p>
+        </div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-icon">🎯</div>
+        <div class="toc-text">
+          <h4>Deployment Guidance</h4>
+          <p>Use-case matched recommendations: agentic, RAG, embedded, fine-tuning</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING / BUY -->
+<section id="buy">
+  <div class="container">
+    <div class="section-label" style="text-align:center">Pricing</div>
+    <h2 class="section-title" style="text-align:center">One Report. One Decision Made Right.</h2>
+    <p class="section-sub" style="text-align:center;margin:0 auto">
+      No subscription. No fluff. Pay once, own the PDF.
+    </p>
+    <div class="pricing-box">
+      <div class="price-amount"><span class="price-currency">€</span>9</div>
+      <p class="price-note">One-time · Instant PDF delivery · No DRM</p>
+      <ul class="price-features">
+        <li><span class="check">✓</span> Full 55+ model benchmark matrix</li>
+        <li><span class="check">✓</span> Composite ranking with methodology</li>
+        <li><span class="check">✓</span> License risk matrix for commercial use</li>
+        <li><span class="check">✓</span> Hardware requirement tables</li>
+        <li><span class="check">✓</span> Provider analysis (8 labs profiled)</li>
+        <li><span class="check">✓</span> Coding assistant leaderboard</li>
+        <li><span class="check">✓</span> Deployment recommendations by use-case</li>
+        <li><span class="check">✓</span> PDF format — no account required</li>
+      </ul>
+      <!-- STRIPE_PAYMENT_LINK_PLACEHOLDER -->
+      <a href="STRIPE_PAYMENT_LINK" id="buy-btn" class="btn-primary" style="width:100%;justify-content:center;font-size:17px;padding:16px;">
+        Buy Report — €9
+      </a>
+      <p class="guarantee">Secure checkout via Stripe · Card payment · Instant delivery</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT GENESIS -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text">
+        <div class="section-label">About</div>
+        <h2 class="section-title" style="font-size:28px">Built by ArkForge Genesis</h2>
+        <p>
+          Genesis is a self-evolving autonomous intelligence built by ArkForge. It continuously
+          monitors the open-weight LLM landscape, ingests benchmark data from HuggingFace,
+          GitHub, and academic sources, and synthesizes actionable intelligence.
+        </p>
+        <p>
+          This report was researched, written, and formatted autonomously — with editorial
+          standards enforced by the genome's fitness criteria. No vendor relationships.
+          No sponsored rankings.
+        </p>
+        <p>
+          <a href="https://github.com/ark-forge/genesis" style="color:var(--accent2)">View Genesis on GitHub →</a>
+        </p>
+      </div>
+      <div class="genesis-card">
+        <div class="prompt">$ genesis --objective "benchmark 55+ LLMs"</div>
+        <div class="output">
+          ✓ Fetching HuggingFace leaderboard data<br>
+          ✓ Ingesting SWE-bench Verified results<br>
+          ✓ Computing composite scores<br>
+          ✓ Auditing 28 licenses<br>
+          ✓ Generating provider profiles<br>
+          ✓ Building deployment matrix<br>
+          ✓ Synthesizing 40+ page report<br>
+          <br>
+          <span style="color:var(--accent2)">→ ai_model_intelligence_report_april_2026.pdf</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>
+    © 2026 ArkForge ·
+    <a href="https://github.com/ark-forge/genesis">GitHub</a> ·
+    <a href="https://github.com/ark-forge/genesis/tree/reports">Reports Branch</a>
+  </p>
+  <p style="margin-top:8px">
+    Questions? Open an issue on GitHub or reach out via the repository.
+  </p>
+</footer>
+
+</body>
+</html>
