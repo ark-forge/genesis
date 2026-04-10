@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Advisor — AI Model Report for Your Use Case</title>
+  <meta name="description" content="Describe your AI use case and get a custom PDF report ranking the top 5 open-weight models with reasoning, benchmarks, and integration tips." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --text: #e8e8f0;
+      --muted: #8888a8;
+      --success: #34d399;
+      --price: #fbbf24;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--accent2);
+    }
+    .logo span { color: var(--text); }
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 720px;
+      width: 100%;
+      padding: 64px 24px 0;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      margin-top: 16px;
+      font-size: 1.1rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── Steps ── */
+    .steps {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent2);
+      flex-shrink: 0;
+    }
+    .step-arrow { color: var(--border); font-size: 1rem; }
+
+    /* ── Card ── */
+    .card {
+      max-width: 680px;
+      width: 100%;
+      margin: 40px auto 0;
+      padding: 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    label .sub {
+      font-weight: 400;
+      color: var(--muted);
+      margin-left: 6px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 140px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    textarea::placeholder { color: var(--muted); }
+    textarea:focus { border-color: var(--accent); }
+
+    /* ── Examples ── */
+    .examples {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .example-chip {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .example-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    /* ── What's included ── */
+    .includes {
+      margin-top: 24px;
+      padding: 16px;
+      background: var(--surface2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .includes-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .includes ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .includes li {
+      font-size: 0.85rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .includes li::before {
+      content: '✓';
+      color: var(--success);
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    /* ── CTA Button ── */
+    .cta-row {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .price-display {
+      display: flex;
+      flex-direction: column;
+    }
+    .price-amount {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--price);
+      line-height: 1;
+    }
+    .price-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .btn-checkout {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: -0.01em;
+    }
+    .btn-checkout:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-checkout:active { transform: translateY(0); }
+    .btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .lock-icon { font-size: 0.9em; opacity: 0.8; }
+
+    /* ── Trust bar ── */
+    .trust {
+      max-width: 680px;
+      width: 100%;
+      margin: 16px auto 0;
+      padding: 0 24px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .trust-item {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── Sample report ── */
+    .sample {
+      max-width: 680px;
+      width: 100%;
+      margin: 48px auto 0;
+      padding: 0 24px;
+    }
+    .sample-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .sample-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .sample-preview .report-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .sample-preview .report-sub {
+      font-size: 0.75rem;
+      color: var(--accent2);
+      margin-bottom: 16px;
+    }
+    .model-rank {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+    }
+    .rank-num {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .model-info { flex: 1; }
+    .model-name { font-weight: 700; color: var(--text); font-size: 0.9rem; }
+    .model-why { color: var(--muted); font-size: 0.8rem; margin-top: 2px; line-height: 1.4; }
+    .model-score {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--success);
+      white-space: nowrap;
+    }
+    .sample-blur {
+      filter: blur(3px);
+      pointer-events: none;
+      user-select: none;
+    }
+    .sample-overlay {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--accent2);
+    }
+
+    /* ── FAQ ── */
+    .faq {
+      max-width: 680px;
+      width: 100%;
+      margin: 48px auto 0;
+      padding: 0 24px;
+    }
+    .faq h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    details {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: var(--surface);
+    }
+    summary {
+      padding: 14px 16px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    summary::after { content: '+'; color: var(--accent2); }
+    details[open] summary::after { content: '−'; }
+    details p {
+      padding: 0 16px 14px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 680px;
+      width: 100%;
+      margin: 48px auto 32px;
+      padding: 0 24px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Validation ── */
+    .error-msg {
+      display: none;
+      color: #f87171;
+      font-size: 0.8rem;
+      margin-top: 6px;
+    }
+    textarea.invalid { border-color: #f87171; }
+
+    @media (max-width: 520px) {
+      .card { padding: 24px 20px; }
+      .includes ul { grid-template-columns: 1fr; }
+      .cta-row { flex-direction: column; align-items: stretch; }
+      .btn-checkout { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Model<span>Advisor</span></div>
+  <div class="badge">Powered by Gemini</div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Find Your Perfect AI Model</h1>
+    <p>Describe your use case. Get a personalized PDF report ranking the top 5 open-weight models with benchmarks, reasoning, and integration tips — in minutes.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <span>Describe your use case</span>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <span>Pay €5 securely</span>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <span>Receive your PDF report</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="card">
+    <label for="use-case">
+      Describe your AI use case
+      <span class="sub">be specific for better results</span>
+    </label>
+    <textarea
+      id="use-case"
+      placeholder="e.g. I need a model for customer support chat that can handle 10k messages/day, needs to run on-premise, must understand French and English, and reply in under 2 seconds..."
+      maxlength="2000"
+    ></textarea>
+    <div class="error-msg" id="error-msg">Please describe your use case (at least 30 characters).</div>
+
+    <div class="examples">
+      <span class="example-chip" onclick="fillExample(this)">Code generation for a Python IDE plugin</span>
+      <span class="example-chip" onclick="fillExample(this)">Medical document summarization (HIPAA-aware)</span>
+      <span class="example-chip" onclick="fillExample(this)">Multilingual customer support chatbot</span>
+      <span class="example-chip" onclick="fillExample(this)">On-device mobile inference, low latency</span>
+      <span class="example-chip" onclick="fillExample(this)">RAG over legal contracts</span>
+    </div>
+
+    <div class="includes">
+      <div class="includes-title">What's in your report</div>
+      <ul>
+        <li>Top 5 models ranked for your use case</li>
+        <li>Benchmark scores (MMLU, HumanEval, etc.)</li>
+        <li>Pros &amp; cons per model</li>
+        <li>Licensing &amp; deployment notes</li>
+        <li>Integration tips &amp; starter code</li>
+        <li>Hardware requirements</li>
+      </ul>
+    </div>
+
+    <div class="cta-row">
+      <div class="price-display">
+        <div class="price-amount">€5</div>
+        <div class="price-note">One-time · PDF delivered by email</div>
+      </div>
+      <button class="btn-checkout" id="checkout-btn" onclick="goToCheckout()">
+        <span class="lock-icon">🔒</span>
+        Get My Report — €5
+      </button>
+    </div>
+  </div>
+
+  <div class="trust">
+    <div class="trust-item">🔐 Stripe-secured payment</div>
+    <div class="trust-item">📄 PDF delivered in minutes</div>
+    <div class="trust-item">🤖 Gemini AI analysis</div>
+    <div class="trust-item">↩️ 24h refund guarantee</div>
+  </div>
+
+  <section class="sample">
+    <div class="sample-title">Sample report preview</div>
+    <div class="sample-preview">
+      <div class="report-title">AI Model Report: Customer Support Chatbot</div>
+      <div class="report-sub">Generated by Gemini · April 2026 · Ranked for your specific requirements</div>
+
+      <div class="model-rank">
+        <div class="rank-num">1</div>
+        <div class="model-info">
+          <div class="model-name">Mistral 7B Instruct v0.3</div>
+          <div class="model-why">Best latency/quality ratio for chat workloads. Apache 2.0 license allows commercial on-prem deployment. Handles French/English natively.</div>
+        </div>
+        <div class="model-score">96/100</div>
+      </div>
+
+      <div class="model-rank sample-blur">
+        <div class="rank-num">2</div>
+        <div class="model-info">
+          <div class="model-name">Llama 3.1 8B Instruct</div>
+          <div class="model-why">Strong multilingual baseline with Meta's commercial license. Excellent MMLU scores for instruction following.</div>
+        </div>
+        <div class="model-score">89/100</div>
+      </div>
+
+      <div class="model-rank sample-blur">
+        <div class="rank-num">3</div>
+        <div class="model-info">
+          <div class="model-name">Phi-3.5 Mini Instruct</div>
+          <div class="model-why">Smallest footprint for edge deployment. Surprisingly competitive on chat benchmarks for 3.8B params.</div>
+        </div>
+        <div class="model-score">81/100</div>
+      </div>
+    </div>
+    <div class="sample-overlay">🔒 Full report unlocked after payment — includes ranks 4–5, benchmarks table, code snippets &amp; deployment guide</div>
+  </section>
+
+  <section class="faq">
+    <h2>Frequently asked questions</h2>
+
+    <details>
+      <summary>How is the report generated?</summary>
+      <p>Your use-case description is analyzed by Gemini, which evaluates 44+ open-weight models against your specific requirements — including latency constraints, language needs, licensing, deployment environment, and task type. The output is a ranked PDF with scores and reasoning.</p>
+    </details>
+
+    <details>
+      <summary>How do I receive the report?</summary>
+      <p>After payment, Stripe redirects you to a confirmation page. You'll receive the PDF by email within 5–10 minutes. If you don't see it, check your spam folder or contact support.</p>
+    </details>
+
+    <details>
+      <summary>What models are considered?</summary>
+      <p>We evaluate models from the Hugging Face Open LLM Leaderboard including Mistral, Llama 3.x, Phi-3/3.5, Gemma 2, Qwen 2.5, DeepSeek, Command-R, and 38 others — only open-weight models you can actually run or fine-tune.</p>
+    </details>
+
+    <details>
+      <summary>Can I get a refund?</summary>
+      <p>Yes. If you're unsatisfied with your report for any reason, email us within 24 hours and we'll refund you in full — no questions asked.</p>
+    </details>
+
+    <details>
+      <summary>Is my use-case description private?</summary>
+      <p>Your description is processed by Gemini API to generate the report and is not stored or sold. We only retain your email to deliver the PDF. See our <a href="#">privacy policy</a> for details.</p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <p>Model Advisor is a product of <a href="https://arkforge.tech" target="_blank">ArkForge</a> · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
+  <p style="margin-top:6px">Payments processed securely by <a href="https://stripe.com" target="_blank">Stripe</a>. We never store card details.</p>
+</footer>
+
+<script>
+  const STRIPE_PRICE_ID = 'price_1TKi4V6iihEhp9U99KPRZplu';
+  // Stripe Checkout is initiated server-side; for a static Pages deployment
+  // we redirect to a pre-built Stripe Payment Link URL.
+  // Replace the URL below with your actual Stripe Payment Link for this price.
+  const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/live_placeholder';
+
+  function fillExample(el) {
+    const ta = document.getElementById('use-case');
+    ta.value = el.textContent;
+    ta.classList.remove('invalid');
+    document.getElementById('error-msg').style.display = 'none';
+    ta.focus();
+  }
+
+  function goToCheckout() {
+    const ta = document.getElementById('use-case');
+    const val = ta.value.trim();
+    const errEl = document.getElementById('error-msg');
+
+    if (val.length < 30) {
+      ta.classList.add('invalid');
+      errEl.style.display = 'block';
+      ta.focus();
+      return;
+    }
+
+    ta.classList.remove('invalid');
+    errEl.style.display = 'none';
+
+    // Store use-case in sessionStorage so the success page can reference it
+    sessionStorage.setItem('modeladvisor_usecase', val);
+
+    // Append use-case as a URL-encoded param for the success webhook
+    const encoded = encodeURIComponent(val.slice(0, 500));
+    const checkoutUrl = STRIPE_PAYMENT_LINK + '?client_reference_id=' + encoded;
+
+    // Redirect to Stripe Payment Link
+    window.location.href = checkoutUrl;
+  }
+
+  // Allow Enter+Shift in textarea, but trap plain Enter for accessibility
+  document.getElementById('use-case').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
+      // Do nothing — let user type multi-line naturally
+    }
+  });
+</script>
+
+</body>
+</html>
